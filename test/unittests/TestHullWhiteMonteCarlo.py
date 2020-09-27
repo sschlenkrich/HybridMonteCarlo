@@ -1,14 +1,14 @@
 #!/usr/bin/python
 
 import sys
-sys.path.append('../../src/')
+sys.path.append('./')
 
 import unittest
 
 import numpy as np
-from termstructures.YieldCurve import YieldCurve
-from models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscreteNumeraire
-from simulations.MCSimulation import MCSimulation
+from src.termstructures.YieldCurve import YieldCurve
+from src.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscreteNumeraire
+from src.simulations.MCSimulation import MCSimulation
 
 class TestHullWhiteMonteCarlo(unittest.TestCase):
 

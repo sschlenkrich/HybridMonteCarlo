@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
 import sys
-sys.path.append('../../src/')
+sys.path.append('./')
 
 import unittest
 
 import numpy as np
-from termstructures.YieldCurve import YieldCurve
-from models.HullWhiteModel import HullWhiteModel
+from src.termstructures.YieldCurve import YieldCurve
+from src.models.HullWhiteModel import HullWhiteModel
 
 class TestHullWhiteModel(unittest.TestCase):
 

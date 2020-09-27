@@ -1,12 +1,10 @@
 #!/usr/bin/python
 
-import sys
-sys.path.append('../src/')
 
 import numpy as np
 from scipy.optimize import brentq
-from mathutils.Helpers import Black, Bachelier, BachelierImpliedVol
-from models.StochasticProcess import StochasticProcess
+from src.mathutils.Helpers import Black, Bachelier, BachelierImpliedVol
+from src.models.StochasticProcess import StochasticProcess
 
 
 class HullWhiteModel(StochasticProcess):
@@ -128,7 +126,22 @@ class HullWhiteModel(StochasticProcess):
         X1[0] = x1
         X1[1] = s1
         return
-        
+
+    # the short rate over an integration time period
+    # this is required for drift calculation in multi-asset and hybrid models
+    def shortRateOverPeriod(self, t0, dt, X0, X1):
+        B_d = self.yieldCurve.discount(t0) / self.yieldCurve.discount(t0 + dt)  # deterministic drift part for r_d
+        x_av = 0.5 * (X0[0] + X0[1])
+        return np.log(B_d) / dt + x_av
+
+    # keep track of components in hybrid model
+
+    def stateAliases(self):
+        return [ 'x', 's' ]
+
+    def factorAliases(self):
+        return [ 'x' ]
+
 
 class HullWhiteModelWithDiscreteNumeraire(HullWhiteModel):
 
