@@ -37,12 +37,11 @@ class HullWhiteModel(StochasticProcess):
         return np.exp(-self.meanReversion*(T-t))
         
     def y(self,t):
-        # find idx s.t. t[idx] < t < t[idx+1]
-        idxSet = np.where(self.volatilityTimes<t)[0]  # better replace by np.searchsorted
-        idx = -1 if (idxSet.shape[0]==0) else idxSet[-1]
-        t0 = 0.0 if (idxSet.shape[0]==0) else self.volatilityTimes[idx]
-        y0 = 0.0 if (idxSet.shape[0]==0) else self.y_[idx]
-        s1 = self.volatilityValues[min(idx+1,len(self.volatilityValues)-1)]  # flat extrapolation
+        # find idx s.t. t[idx-1] < t <= t[idx]
+        idx = np.searchsorted(self.volatilityTimes,t)
+        t0 = 0.0 if idx==0 else self.volatilityTimes[idx-1]
+        y0 = 0.0 if idx==0 else self.y_[idx-1]
+        s1 = self.volatilityValues[min(idx,len(self.volatilityValues)-1)]  # flat extrapolation
         y1 = (self.GPrime(t0,t)**2) * y0 +                      \
                 s1**2 * (1.0 - np.exp(-2*self.meanReversion*(t-t0))) /  \
                 (2.0 * self.meanReversion)
@@ -57,10 +56,9 @@ class HullWhiteModel(StochasticProcess):
         return self.GPrime(t,T)*xt + integral
     
     def sigma(self,t):   # Todo test this method
-        # find idx s.t. t[idx] < t < t[idx+1]
-        idxSet = np.where(self.volatilityTimes<t)[0] # better replace by np.searchsorted
-        idx = -1 if (idxSet.shape[0]==0) else idxSet[-1]
-        return self.volatilityValues[min(idx+1,len(self.volatilityValues)-1)]
+        # find idx s.t. t[idx-1] < t <= t[idx]
+        idx = np.searchsorted(self.volatilityTimes,t)
+        return self.volatilityValues[min(idx,len(self.volatilityValues)-1)]
 
 
     # model methods
