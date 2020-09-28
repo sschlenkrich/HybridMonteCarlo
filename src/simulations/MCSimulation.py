@@ -13,15 +13,16 @@ class MCSimulation:
         self.timeInterpolation = timeInterpolation  # allow state calculation in between simulated states
         # random number generator
         print(' |dW\'s', end='', flush=True)
-        self.dW = np.random.RandomState(seed).standard_normal([self.nPaths,len(self.times)-1,model.factors()])
+        rg = np.random.Generator(np.random.PCG64())
+        self.dW = rg.standard_normal([self.nPaths,len(self.times)-1,model.factors()])        
         print('|', end='', flush=True)
         # simulate states
         self.X = np.zeros([self.nPaths,len(self.times),model.size()])
         for i in range(self.nPaths):
             if i % max(int(self.nPaths/10),1) == 0 : print('s', end='', flush=True)
-            self.X[i][0] = self.model.initialValues()
+            self.X[i,0] = self.model.initialValues()
             for j in range(len(self.times)-1):
-                model.evolve(self.times[j],self.X[i][j],times[j+1]-times[j],self.dW[i][j],self.X[i][j+1])
+                model.evolve(self.times[j],self.X[i,j],times[j+1]-times[j],self.dW[i,j],self.X[i,j+1])
         print('| Finished.', end='\n', flush=True)
 
     def state(self, idx, t):
