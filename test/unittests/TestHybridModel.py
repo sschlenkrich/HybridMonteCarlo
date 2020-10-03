@@ -7,13 +7,14 @@ import unittest
 
 import numpy as np
 
+from src.mathutils.Helpers import BlackImpliedVol, BlackVega
 from src.termstructures.YieldCurve import YieldCurve
 from src.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscreteNumeraire
 from src.models.AssetModel import AssetModel
 from src.models.HybridModel import HybridModel
 
 from src.simulations.MCSimulation import MCSimulation
-from src.simulations.Payoffs import Fixed, Pay, Asset, LiborRate
+from src.simulations.Payoffs import Fixed, Pay, Asset, LiborRate, Max
 
 import matplotlib.pyplot as plt
 
@@ -80,25 +81,50 @@ class TestHybridModel(unittest.TestCase):
         self.assertLess(np.max(C), 1.0e-15)
 
     def test_HybridSimulation(self):
-        times = np.linspace(0.0, 10.0, 3)
-        nPaths = 2**10
-        seed = 1234
+        times = np.concatenate([ np.linspace(0.0, 10.0, 11), [10.5] ])
+        nPaths = 2**13
+        seed = 314159265359
         # risk-neutral simulation
         mcSim = MCSimulation(self.model,times,nPaths,seed,False)
         # 
         T = 10.0
         P = Pay(Fixed(1.0),T)
-        pv, err = fwd(mcSim,P)
+        fw, err = fwd(mcSim,P)
         # domestic numeraire
-        print('1.0 @ %4.1lfy %8.6lf - mc_err = %8.6lf' % (T,pv,err))
-        # foreign asset e
+        print('1.0   @ %4.1lfy %8.6lf - mc_err = %8.6lf' % (T,fw,err))
+        # foreign assets
         for k, alias in enumerate(self.model.forAliases):
             p = Asset(T,alias)
             xT = self.model.forAssetModels[k].X0 * \
                 self.model.forRatesModels[k].yieldCurve.discount(T) / \
                 self.model.domRatesModel.yieldCurve.discount(T)
-            pv, err = fwd(mcSim,p)
-            print(alias + ' @ %4.1lfy %8.6lf vs %8.6lf (curve) - mc_err = %8.6lf' % (T,pv,xT,err))
+            fw, err = fwd(mcSim,p)
+            print(alias + '   @ %4.1lfy %8.6lf vs %8.6lf (curve) - mc_err = %8.6lf' % (T,fw,xT,err))
+        # domestic Libor rate
+        Tstart = 10.0
+        Tend = 10.5
+        L = Pay(LiborRate(T,Tstart,Tend,alias='EUR'),Tend)
+        fw, err = fwd(mcSim,L)
+        Lref = (mcSim.model.domRatesModel.yieldCurve.discount(Tstart) /    \
+                mcSim.model.domRatesModel.yieldCurve.discount(Tend) - 1) / \
+               (Tend - Tstart) 
+        print('L_EUR @ %4.1lfy %8.6lf vs %8.6lf (curve) - mc_err = %8.6lf' % (T,fw,Lref,err))
+        # foreign Lbor rates
+        for k, alias in enumerate(self.model.forAliases):
+            L = Pay(LiborRate(T,Tstart,Tend,alias=alias)*Asset(Tend,alias),Tend)
+            fw, err = fwd(mcSim,L)
+            fw *= mcSim.model.domRatesModel.yieldCurve.discount(Tend) / \
+                  mcSim.model.forRatesModels[k].yieldCurve.discount(Tend) / \
+                  mcSim.model.forAssetModels[k].X0
+            err *= mcSim.model.domRatesModel.yieldCurve.discount(Tend) / \
+                   mcSim.model.forRatesModels[k].yieldCurve.discount(Tend) / \
+                   mcSim.model.forAssetModels[k].X0
+            Lref = (mcSim.model.forRatesModels[k].yieldCurve.discount(Tstart) /    \
+                    mcSim.model.forRatesModels[k].yieldCurve.discount(Tend) - 1) / \
+                   (Tend - Tstart) 
+            print('L_%s @ %4.1lfy %8.6lf vs %8.6lf (curve) - mc_err = %8.6lf' % (alias,T,fw,Lref,err))
+
+
 
     def test_HybridVolAdjusterCalculation(self):
         # we set up a hybrid model consistent to QuantLib
@@ -136,17 +162,49 @@ class TestHybridModel(unittest.TestCase):
         # USD - GBP
         corr[2,4] = 0.0
         corr[4,2] = 0.0
-        print(corr)
+        # overwrtite
+        # corr = np.identity(2 * len(forAliases) + 1)
+        # print(corr-corr.transpose())
         model = HybridModel(domAlias,domModel,forAliases,forAssetModels,forRatesModels,corr)
         hybVolAdjTimes = np.linspace(0.0, 20.0, 21)
         model.recalculateHybridVolAdjuster(hybVolAdjTimes)
-        plt.plot(model.hybAdjTimes,model.hybVolAdj[0], 'r*')
-        plt.plot(model.hybAdjTimes,model.hybVolAdj[1], 'b*')
+        #plt.plot(model.hybAdjTimes,model.hybVolAdj[0], 'r*')
+        #plt.plot(model.hybAdjTimes,model.hybVolAdj[1], 'b*')
         #
-        times = np.linspace(0.0,20.0,101)
-        plt.plot(times,[ model.hybridVolAdjuster(0,t) for t in times ]  , 'r-')
-        plt.plot(times,[ model.hybridVolAdjuster(1,t) for t in times ]  , 'b-')
-        plt.show()
+        #times = np.linspace(0.0,20.0,101)
+        #plt.plot(times,[ model.hybridVolAdjuster(0,t) for t in times ]  , 'r-')
+        #plt.plot(times,[ model.hybridVolAdjuster(1,t) for t in times ]  , 'b-')
+        # plt.show()
+        #
+        times = np.linspace(0.0, 10.0, 11)
+        nPaths = 2**13
+        seed = 314159265359
+        # risk-neutral simulation
+        mcSim = MCSimulation(model,times,nPaths,seed,False)
+        # 
+        T = 10.0
+        for k, alias in enumerate(model.forAliases):
+            # ATM forward
+            xT = model.forAssetModels[k].X0 * \
+                 model.forRatesModels[k].yieldCurve.discount(T) / \
+                 model.domRatesModel.yieldCurve.discount(T)
+            K = Fixed(xT)
+            Z = Fixed(0.0)
+            C = Pay(Max(Asset(T,alias)-K,Z),T)
+            fw, err = fwd(mcSim,C)
+            vol = BlackImpliedVol(fw,xT,xT,T,1.0)
+            vega = BlackVega(xT,xT,vol,T)
+            err /= vega
+            volRef = model.forAssetModels[k].sigma
+            print('C_%s @ %4.1lfy %8.6lf vs %8.6lf (curve) - mc_err = %8.6lf' % (alias,T,vol,volRef,err))
+            P = Pay(Max(K-Asset(T,alias),Z),T)
+            fw, err = fwd(mcSim,P)
+            vol = BlackImpliedVol(fw,xT,xT,T,-1.0)
+            vega = BlackVega(xT,xT,vol,T)
+            err /= vega
+            volRef = model.forAssetModels[k].sigma
+            print('P_%s @ %4.1lfy %8.6lf vs %8.6lf (curve) - mc_err = %8.6lf' % (alias,T,vol,volRef,err))
+
 
 
 if __name__ == '__main__':

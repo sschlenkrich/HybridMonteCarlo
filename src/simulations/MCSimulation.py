@@ -13,7 +13,7 @@ class MCSimulation:
         self.timeInterpolation = timeInterpolation  # allow state calculation in between simulated states
         # random number generator
         print(' |dW\'s', end='', flush=True)
-        rg = np.random.Generator(np.random.PCG64())
+        rg = np.random.Generator(np.random.PCG64(seed))
         self.dW = rg.standard_normal([self.nPaths,len(self.times)-1,model.factors()])        
         print('|', end='', flush=True)
         # simulate states

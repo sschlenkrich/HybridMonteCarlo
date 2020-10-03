@@ -140,7 +140,7 @@ class HullWhiteModel(StochasticProcess):
     # this is required for drift calculation in multi-asset and hybrid models
     def shortRateOverPeriod(self, t0, dt, X0, X1):
         B_d = self.yieldCurve.discount(t0) / self.yieldCurve.discount(t0 + dt)  # deterministic drift part for r_d
-        x_av = 0.5 * (X0[0] + X0[1])
+        x_av = 0.5 * (X0[0] + X1[0])
         return np.log(B_d) / dt + x_av
 
     # keep track of components in hybrid model

@@ -16,6 +16,11 @@ def Black(strike, forward, sigma, T, callOrPut):
         return max(callOrPut*(forward-strike),0.0)  # intrinsic value
     return strike * BlackOverK(forward/strike,nu,callOrPut)
 
+def BlackVega(strike, forward, sigma, T):
+    stdDev = sigma*np.sqrt(T)
+    d1 = np.log(forward/strike) / stdDev + stdDev / 2.0    
+    return forward * norm.pdf(d1) * np.sqrt(T)
+
 def BlackImpliedVol(price, strike, forward, T, callOrPut):
     def objective(sigma):
         return Black(strike, forward, sigma, T, callOrPut) - price

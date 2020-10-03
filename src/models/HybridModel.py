@@ -125,11 +125,11 @@ class HybridModel(StochasticProcess):
     def zeroBond(self, t, T, X, alias):
         if alias is None or alias==self.domAlias:
             x = X[:self.domRatesModel.size()]
-            return self.domRatesModel.zeroBond(t, T, x)
+            return self.domRatesModel.zeroBond(t, T, x, alias)
         k = self.index[alias]  # this should throw an exception if alias is unknown
         x = X[ self.modelsStartIdx[2 * k + 1] : \
                self.modelsStartIdx[2 * k + 1] + self.forRatesModels[k].size() ]
-        return self.forRatesModels[k].zeroBond(t, T, x)
+        return self.forRatesModels[k].zeroBond(t, T, x, alias)
 
     # keep track of components in hybrid model
 
