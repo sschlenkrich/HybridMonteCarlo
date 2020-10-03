@@ -15,6 +15,8 @@ from src.models.HybridModel import HybridModel
 from src.simulations.MCSimulation import MCSimulation
 from src.simulations.Payoffs import Fixed, Pay, Asset, LiborRate
 
+import matplotlib.pyplot as plt
+
 # a quick way to get a model
 def HWModel(rate=0.01, vol=0.0050, mean=0.03):
     curve = YieldCurve(rate)
@@ -98,7 +100,53 @@ class TestHybridModel(unittest.TestCase):
             pv, err = fwd(mcSim,p)
             print(alias + ' @ %4.1lfy %8.6lf vs %8.6lf (curve) - mc_err = %8.6lf' % (T,pv,xT,err))
 
-
+    def test_HybridVolAdjusterCalculation(self):
+        # we set up a hybrid model consistent to QuantLib
+        domAlias = 'EUR'
+        domModel = HWModel(0.01, 0.0050, 0.01)
+        forAliases = [ 'USD', 'GBP' ]
+        forAssetModels = [
+            AssetModel(1.0, 0.30),
+            AssetModel(2.0, 0.15) ]
+        forRatesModels = [
+            HWModel(0.02, 0.0060, 0.02), 
+            HWModel(0.02, 0.0070, 0.03) 
+        ]
+        corr = np.identity(2 * len(forAliases) + 1)
+        # [ EUR, USD-EUR, USD, GBP-EUR, GBP ]
+        #   0    1        2    3        4
+        # USD-EUR - EUR
+        corr[0,1] = 0.5
+        corr[1,0] = 0.5
+        # USD-EUR - USD
+        corr[1,2] = -0.5
+        corr[2,1] = -0.5
+        # EUR - USD
+        corr[0,2] = -0.5
+        corr[2,0] = -0.5
+        # GBP-EUR - EUR
+        corr[0,3] = -0.5
+        corr[3,0] = -0.5
+        # GBP-EUR - GBP
+        corr[3,4] = 0.5
+        corr[4,3] = 0.5
+        # EUR - GBP
+        corr[0,4] = -0.8
+        corr[4,0] = -0.8
+        # USD - GBP
+        corr[2,4] = 0.0
+        corr[4,2] = 0.0
+        print(corr)
+        model = HybridModel(domAlias,domModel,forAliases,forAssetModels,forRatesModels,corr)
+        hybVolAdjTimes = np.linspace(0.0, 20.0, 21)
+        model.recalculateHybridVolAdjuster(hybVolAdjTimes)
+        plt.plot(model.hybAdjTimes,model.hybVolAdj[0], 'r*')
+        plt.plot(model.hybAdjTimes,model.hybVolAdj[1], 'b*')
+        #
+        times = np.linspace(0.0,20.0,101)
+        plt.plot(times,[ model.hybridVolAdjuster(0,t) for t in times ]  , 'r-')
+        plt.plot(times,[ model.hybridVolAdjuster(1,t) for t in times ]  , 'b-')
+        plt.show()
 
 
 if __name__ == '__main__':

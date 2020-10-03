@@ -60,6 +60,17 @@ class HullWhiteModel(StochasticProcess):
         idx = np.searchsorted(self.volatilityTimes,t)
         return self.volatilityValues[min(idx,len(self.volatilityValues)-1)]
 
+    # bond volatility is used in hybrid model vol adjuster
+
+    def zeroBondVolatility(self, t, T):
+        # we wrap scalar bond volatility into array to allow
+        # for generalisation to multi-factor models
+        return np.array([ self.sigma(t)*self.G(t,T) ])
+
+    def zeroBondVolatilityPrime(self, t, T):
+        # we wrap scalar bond volatility into array to allow
+        # for generalisation to multi-factor models
+        return np.array([ self.sigma(t)*self.GPrime(t,T) ])
 
     # model methods
 
