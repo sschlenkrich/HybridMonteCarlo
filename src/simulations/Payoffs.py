@@ -59,6 +59,44 @@ class Payoff:
             other = Fixed(other)
         return Div(other,self)
 
+    # logical operators
+
+    def __lt__(self, other):
+        if isinstance(other,(int,float)):
+            other = Fixed(other)
+        return Logical(self,other,'<')
+
+    def __le__(self, other):
+        if isinstance(other,(int,float)):
+            other = Fixed(other)
+        return Logical(self,other,'<=')
+
+    def __eq__(self, other):
+        if isinstance(other,(int,float)):
+            other = Fixed(other)
+        return Logical(self,other,'==')
+
+    def __ne__(self, other):
+        if isinstance(other,(int,float)):
+            other = Fixed(other)
+        return Logical(self,other,'!=')
+
+    def __ge__(self, other):
+        if isinstance(other,(int,float)):
+            other = Fixed(other)
+        return Logical(self,other,'>=')
+
+    def __gt__(self, other):
+        if isinstance(other,(int,float)):
+            other = Fixed(other)
+        return Logical(self,other,'>')
+
+    # set pay time
+
+    def __matmul__(self, other):
+        # better check that other is a float
+        return Pay(self,other)
+
     # use payoff as function
 
     def __call__(self, obsTime):
@@ -73,6 +111,8 @@ class Fixed(Payoff):
         self.x = x
     def at(self, p):
         return self.x
+    def __str__(self):
+        return '%.4f' % self.x
 
 class Pay(Payoff):
     def __init__(self, x, payTime):
@@ -82,6 +122,8 @@ class Pay(Payoff):
         return self.x.at(p)
     def observationTimes(self):
         return self.x.observationTimes().union({ self.obsTime })
+    def __str__(self):
+        return '(%s @ %.2f)' % (self.x,self.obsTime)
 
 class Asset(Payoff):
     def __init__(self, t, alias=None):
@@ -89,6 +131,8 @@ class Asset(Payoff):
         self.alias = alias
     def at(self, p):
         return p.asset(self.obsTime,self.alias)
+    def __str__(self):
+        return '%s(%.2f)' % (self.alias,self.obsTime)
 
 # basic rates payoffs
 
@@ -99,6 +143,8 @@ class ZeroBond(Payoff):
         self.alias = alias
     def at(self, p):
         return p.zeroBond(self.obsTime,self.payTime,self.alias)
+    def __str__(self):
+        return 'P_%s(%.2f,%.2f)' % (self.alias,self.obsTime,self.payTime)
 
 class LiborRate(Payoff):
     def __init__(self, obsTime, startTime, endTime, yearFraction=None, tenorBasis = 1.0, alias=None):
@@ -112,6 +158,8 @@ class LiborRate(Payoff):
         pStart = p.zeroBond(self.obsTime,self.startTime,self.alias)
         pEnd   = p.zeroBond(self.obsTime,self.endTime,self.alias)
         return (pStart/pEnd*self.tenorBasis - 1.0)/self.yearFraction
+    def __str__(self):
+        return 'L_%s(%.2f;%.2f,%.2f)' % (self.alias,self.obsTime,self.startTime,self.endTime)
 
 class SwapRate(Payoff):
     def __init__(self, obsTime, floatTimes, floatWeights, fixedTimes, fixedWeights, alias=None):
@@ -125,6 +173,8 @@ class SwapRate(Payoff):
         num = sum([ w*p.zeroBond(self.obsTime,T,self.alias) for w,T in zip(self.floatWeights,self.floatTimes) ])
         den = sum([ w*p.zeroBond(self.obsTime,T,self.alias) for w,T in zip(self.fixedWeights,self.fixedTimes) ])
         return num / den
+    def __str__(self):
+        return 'S_%s(%.2f;%.2f,%.2f)' % (self.alias,self.obsTime,self.floatTimes[0],self.floatTimes[-1])
 
 # arithmetic operations
 
@@ -143,6 +193,14 @@ class Axpy(Payoff):
         if self.y:
             return self.x.observationTimes().union(self.y.observationTimes())
         return self.x.observationTimes()
+    def __str__(self):
+        if self.y is None:
+            return '%.4f %s' % (self.a,self.x)
+        if self.a == 1.0:
+            return '(%s + %s)' % (self.x,self.y)
+        if self.a == -1.0:
+            return '(%s - %s)' % (self.y,self.x)
+        return '(%.4f %s + %s)' % (self.a,self.x,self.y)
     
 class Mult(Payoff):
     def __init__(self, x, y):
@@ -153,6 +211,8 @@ class Mult(Payoff):
         return self.x.at(p) * self.y.at(p)
     def observationTimes(self):
         return self.x.observationTimes().union(self.y.observationTimes())
+    def __str__(self):
+        return '%s %s' % (self.x,self.y)
     
 class Div(Payoff):
     def __init__(self, x, y):
@@ -163,6 +223,8 @@ class Div(Payoff):
         return self.x.at(p) / self.y.at(p)
     def observationTimes(self):
         return self.x.observationTimes().union(self.y.observationTimes())
+    def __str__(self):
+        return '%s / %s' % (self.x,self.y)
 
 class Max(Payoff):
     def __init__(self, x, y):
@@ -173,6 +235,8 @@ class Max(Payoff):
         return max(self.x.at(p), self.y.at(p))
     def observationTimes(self):
         return self.x.observationTimes().union(self.y.observationTimes())
+    def __str__(self):
+        return 'Max(%s, %s)' % (self.x,self.y)
 
 class Min(Payoff):
     def __init__(self, x, y):
@@ -183,6 +247,37 @@ class Min(Payoff):
         return min(self.x.at(p), self.y.at(p))
     def observationTimes(self):
         return self.x.observationTimes().union(self.y.observationTimes())
+    def __str__(self):
+        return 'Min(%s, %s)' % (self.x,self.y)
+
+class Logical(Payoff):
+    def __init__(self, x, y, opString):
+        Payoff.__init__(self, 0.0)
+        self.x = x
+        self.y = y
+        self.opString = opString
+        self.op = None
+        if opString == '<':
+            self.op = lambda p : float(self.x.at(p)<self.y.at(p))
+        if opString == '<=':
+            self.op = lambda p : float(self.x.at(p)<=self.y.at(p))
+        if opString == '==':
+            self.op = lambda p : float(self.x.at(p)==self.y.at(p))
+        if opString == '!=':
+            self.op = lambda p : float(self.x.at(p)!=self.y.at(p))
+        if opString == '>=':
+            self.op = lambda p : float(self.x.at(p)>=self.y.at(p))
+        if opString == '>':
+            self.op = lambda p : float(self.x.at(p)>self.y.at(p))
+        if not self.op:
+            raise ValueError('Unknown operator: %s.' % opString)
+    def at(self, p):
+        return self.op(p)
+    def observationTimes(self):
+        return self.x.observationTimes().union(self.y.observationTimes())
+    def __str__(self):
+        return '(%s %s %s)' % (self.x,self.opString,self.y)
+
 
 
 # Add further payoffs here
