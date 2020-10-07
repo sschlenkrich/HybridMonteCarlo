@@ -12,7 +12,7 @@ from src.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscrete
 from src.models.SpreadModel import SpreadModel
 
 from src.simulations.MCSimulation import MCSimulation
-from src.simulations.Payoffs import Fixed, Pay, Asset, LiborRate
+from src.simulations.Payoffs import Fixed, Pay
 
 # a quick way to get a model
 def HWModel(rate=0.01, vol=0.0050, mean=0.03):
@@ -50,7 +50,7 @@ class TestSpreadModel(unittest.TestCase):
 
     def test_SpreadSimulation(self):
         times = np.linspace(0.0, 10.0, 11)
-        nPaths = 2**13
+        nPaths = 2**10
         seed = 1234
         # risk-neutral simulation
         mcSim = MCSimulation(self.model,times,nPaths,seed,False)
