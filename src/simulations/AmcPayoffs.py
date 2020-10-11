@@ -44,10 +44,13 @@ class AmcPayoff(Payoff):
         # a function calculating f(X,Y;T), this is defined in derived classes
         raise ValueError('Implementation of payoff funtion f() required.')
 
+    def __useRegression(self):  # we need this condition several times
+        return self.regression is None and \
+           self.z is not None and          \
+           self.simulation is not None
+
     def calibrateRegression(self):
-        if self.regression is None and \
-           self.z is not None and      \
-           self.simulation is not None :  # only in this case we calculate the regression
+        if self.__useRegression() :  # only in this case we calculate the regression
             T = np.zeros(self.simulation.nPaths)  # the actual trigger used for regression
             Z = np.zeros([self.simulation.nPaths,len(self.z)])
             for k in range(self.simulation.nPaths):
@@ -84,6 +87,18 @@ class AmcPayoff(Payoff):
         trigger = X - Y
         return self.f(X,Y,trigger,None)
 
+    def observationTimes(self):
+        obsTimes = { self.obsTime }
+        for x in self.x:
+            obsTimes = obsTimes.union(x.observationTimes())
+        if self.y is not None:  # we want to allow payoff function with single argument
+            for y in self.y:
+                obsTimes = obsTimes.union(y.observationTimes())
+        if self.__useRegression():
+            for z in self.z:
+                obsTimes = obsTimes.union(z.observationTimes())
+        return obsTimes
+
     def __str__(self):
         text = '%.2f,[' % self.obsTime
         for x in self.x:
@@ -94,9 +109,7 @@ class AmcPayoff(Payoff):
             for y in self.y:
                 text += str(y) + ','
         text = text[:-1] + ']'
-        if self.regression is None and \
-           self.z is not None and      \
-           self.simulation is not None :  # only in this case we calculate the regression
+        if self.__useRegression():  # only in this case we calculate the regression
             text += ';['
             for z in self.z:
                 text += str(z) + ','

@@ -97,11 +97,33 @@ class Payoff:
         # better check that other is a float
         return Pay(self,other)
 
+    # cache a payoff for repeated use via ~x
+
+    def __invert__(self):
+        return Cache(self)
+
     # use payoff as function
 
     def __call__(self, obsTime):
         raise NotImplementedError('Implementation of call operator () required.')
 
+# avoid repeated evaluation if payoff is re-used
+
+class Cache(Payoff):
+    def __init__(self, x):
+        Payoff.__init__(self, x.obsTime)
+        self.x = x
+        self._lastPath = None
+        self._lastPayoff = None
+    def at(self, p):
+        if not self._lastPath == p:
+            self._lastPath = p
+            self._lastPayoff = self.x.at(p)
+        return self._lastPayoff
+    def observationTimes(self):
+        return self.x.observationTimes()
+    def __str__(self):
+        return '~{%s}' % self.x
 
 # basic payoffs
 
