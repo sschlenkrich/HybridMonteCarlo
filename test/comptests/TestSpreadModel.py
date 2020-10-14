@@ -8,7 +8,7 @@ import unittest
 import numpy as np
 
 from src.termstructures.YieldCurve import YieldCurve
-from src.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscreteNumeraire
+from src.models.HullWhiteModel import HullWhiteModel
 from src.models.SpreadModel import SpreadModel
 
 from src.simulations.MCSimulation import MCSimulation

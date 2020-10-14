@@ -78,6 +78,12 @@ Black-Scholes.
 A hybrid model composed of short rate models and asset models
 
 
+## Open Issues
+
+  - test hybrid model with deterministic rates model
+  - add multi-factor rates model
+  - add intensity models
+  - swap with AMC
 
 
 

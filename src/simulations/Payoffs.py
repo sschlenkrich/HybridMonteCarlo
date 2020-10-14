@@ -116,7 +116,7 @@ class Cache(Payoff):
         self._lastPath = None
         self._lastPayoff = None
     def at(self, p):
-        if not self._lastPath == p:
+        if p is not self._lastPath:
             self._lastPath = p
             self._lastPayoff = self.x.at(p)
         return self._lastPayoff
