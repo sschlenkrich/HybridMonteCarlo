@@ -24,7 +24,7 @@ class QuasiGaussianModel(StochasticProcess):
         self._DfT = np.linalg.cholesky(self._Gamma)
         # [ H^f H^{-1} ] = [ exp{-chi_j*delta_i} ]
         Hf_H_inv = np.exp(np.array([ [ -chi * delta for chi in self._chi ] for delta in self._delta ]))
-        self.HHfInv = np.linalg.inv(Hf_H_inv)
+        self._HHfInv = np.linalg.inv(Hf_H_inv)
 
     # time-dependent model parameters are assumed (left-) piece-wise constant
     def _idx(self,t):
@@ -121,7 +121,7 @@ class QuasiGaussianModel(StochasticProcess):
     def sigma_xT(self, t, X):
         # tmp = H*Hf^-1 * sigma_f  ... broadcast second dimension of sigma_f
         # res = tmp * Df^T  ... matrix multiplication
-        return (self.HHfInv * self.sigma_f(t,X)) @ self._DfT
+        return (self._HHfInv * self.sigma_f(t,X)) @ self._DfT
 
     # simulate Quasi-Gaussian model as Gaussian model with frozen vol matrix
     def evolve(self, t0, X0, dt, dW, X1):
@@ -161,7 +161,7 @@ class QuasiGaussianModel(StochasticProcess):
         # finally, we need to update s as well
         x0 = np.sum(X0[:self._d])
         x1 = np.sum(X1[:self._d])
-        X1[-1] = X0[-1] + 0.5 * (x0 + x1)
+        X1[-1] = X0[-1] + 0.5 * (x0 + x1) * dt
         # all done
         return
     
@@ -192,7 +192,7 @@ class QuasiGaussianModel(StochasticProcess):
     def stateAliases(self):
         aliases = [ 'x_%d' % i for i in range(self._d) ]
         for i in range(self._d):
-            aliases += [ 'x_%d_%d' % (i,j) for j in range(self._d) ]
+            aliases += [ 'y_%d_%d' % (i,j) for j in range(self._d) ]
         aliases += [ 's' ]
         return aliases
 
