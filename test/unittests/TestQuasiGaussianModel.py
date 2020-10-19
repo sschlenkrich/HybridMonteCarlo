@@ -255,6 +255,12 @@ class TestQuasiGaussianModel(unittest.TestCase):
         model.evolve(0.0,X[0],5.0,dW[0],X[1])
         model.evolve(5.0,X[1],5.0,dW[1],X[2])
         self.assertTrue(np.allclose(X,Xref,rtol=0.0,atol=1.0e-14))
+        # test zero coupon bond (again)
+        qlzcb = ql.RealMCZeroBond(5.0,10.0,'')
+        zcbRef = ql.RealMCPayoffPricer_at(qlzcb,mc)[0]
+        # zcbRef = 0.851676232405887
+        zcb = model.zeroBond(5.0,10.0,X[1],None)
+        self.assertAlmostEqual(zcb,zcbRef,15)
 
 
 
