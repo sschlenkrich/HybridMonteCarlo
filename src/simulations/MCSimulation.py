@@ -68,3 +68,15 @@ class Path:
     def asset(self, t, alias):
         # we may add asset adjuster here
         return self.simulation.model.asset(t, self.simulation.state(self.idx,t), alias)
+
+    # Cumulated intensity; probability of tau > t, conditional on F_t
+    def hazardProcess(self, t, alias):
+        return self.simulation.model.hazardProcess(t, self.simulation.state(self.idx,t), alias)
+    
+    # instantanous probability of default
+    def hazardRate(self, t, alias):
+        return self.simulation.model.hazardRate(t, self.simulation.state(self.idx,t), alias)
+    
+    # probavility of survival consitional on information at t
+    def survivalProb(self, t, T, alias):
+        return self.simulation.model.survivalProb(t, T, self.simulation.state(self.idx,t), alias)

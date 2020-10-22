@@ -92,6 +92,14 @@ class DeterministicModel(StochasticProcess):
             # we may add asset adjuster here
             return self.model.asset(t, None, alias)
 
+    # there are no components to keep track of
+
+    def stateAliases(self):
+        return []
+
+    def factorAliases(self):
+        return []
+
 # some easy to use functions
 
 def DcfModel(curve):

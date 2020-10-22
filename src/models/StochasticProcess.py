@@ -41,6 +41,20 @@ class StochasticProcess:
     def asset(self, t, X, alias):
         raise NotImplementedError('Implementation of method asset required.')
     
+    # additional simulated credit quantities, we use a Cox process
+    # for references, see
+    #   - Brigo/Mercurio, 2007, Sec. 22.2.3
+    #   - Brigo/Vrins, Disentangling wrong-way risk, 2016, Sec. 3.3
+
+    # Cumulated intensity; probability of tau > t, conditional on F_t
+    def hazardProcess(self, t, X, alias):
+        raise NotImplementedError('Implementation of method hazardProcess required.')
     
+    # instantanous probability of default
+    def hazardRate(self, t, X, alias):
+        raise NotImplementedError('Implementation of method hazardRate required.')
     
+    # probavility of survival consitional on information at t
+    def survivalProb(self, t, T, X, alias):
+        raise NotImplementedError('Implementation of method survivalProb required.')
     
