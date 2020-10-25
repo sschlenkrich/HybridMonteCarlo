@@ -66,6 +66,18 @@ class SpreadModel(StochasticProcess):
         # a foreign or domestic currency zero coupon bond is delegated to base model
         return self.baseModel.zeroBond(t, T, X[ :self.baseModel.size()  ], alias)
 
+    # Cumulated intensity; probability of tau > t, conditional on F_t
+    def hazardProcess(self, t, X, alias):
+        return self.baseModel.hazardProcess(t, X[:self.baseModel.size()], alias)
+    
+    # instantanous probability of default
+    def hazardRate(self, t, X, alias):
+        return self.baseModel.hazardRate(t, X[:self.baseModel.size()], alias)
+    
+    # probavility of survival consitional on information at t
+    def survivalProb(self, t, T, X, alias):
+        return self.baseModel.survivalProb(t, T, X[:self.baseModel.size()], alias)
+
     # the short rate over an integration time period
     # this is required for drift calculation in multi-asset and hybrid models
     def shortRateOverPeriod(self, t0, dt, X0, X1):
