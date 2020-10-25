@@ -251,6 +251,10 @@ class Div(Payoff):
 class Max(Payoff):
     def __init__(self, x, y):
         Payoff.__init__(self, 0.0)
+        if isinstance(x,(int,float)):
+            x = Fixed(x)
+        if isinstance(y,(int,float)):
+            y = Fixed(y)
         self.x = x
         self.y = y
     def at(self, p):
@@ -263,6 +267,10 @@ class Max(Payoff):
 class Min(Payoff):
     def __init__(self, x, y):
         Payoff.__init__(self, 0.0)
+        if isinstance(x,(int,float)):
+            x = Fixed(x)
+        if isinstance(y,(int,float)):
+            y = Fixed(y)
         self.x = x
         self.y = y
     def at(self, p):
@@ -275,6 +283,10 @@ class Min(Payoff):
 class Logical(Payoff):
     def __init__(self, x, y, opString):
         Payoff.__init__(self, 0.0)
+        if isinstance(x,(int,float)):
+            x = Fixed(x)
+        if isinstance(y,(int,float)):
+            y = Fixed(y)
         self.x = x
         self.y = y
         self.opString = opString
