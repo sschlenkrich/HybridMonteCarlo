@@ -5,9 +5,9 @@ sys.path.append('./')
 
 import QuantLib as ql
 
-from src.simulations.Payoffs import Payoff, Fixed, ZeroBond, LiborRate, Cache
-from src.simulations.AmcPayoffs import AmcSum
-from src.products.Product import Product
+from hybmc.simulations.Payoffs import Payoff, Fixed, ZeroBond, LiborRate, Cache
+from hybmc.simulations.AmcPayoffs import AmcSum
+from hybmc.products.Product import Product
 
 def DiscountedPayoffFromCashFlow(cf, obsTime, payOrReceive, discYtsH=None):
     # this is a bit dangerous if someone changes evaluation date

@@ -6,9 +6,9 @@ sys.path.append('./')
 import unittest
 
 import numpy as np
-from src.termstructures.YieldCurve import YieldCurve
-from src.models.DeterministicModel import DcfModel
-from src.simulations.Payoffs import Payoff, Fixed, Pay, Asset, ZeroBond, LiborRate, SwapRate, Max, Min
+from hybmc.termstructures.YieldCurve import YieldCurve
+from hybmc.models.DeterministicModel import DcfModel
+from hybmc.simulations.Payoffs import Payoff, Fixed, Pay, Asset, ZeroBond, LiborRate, SwapRate, Max, Min
 
 class TestPayoffScripting(unittest.TestCase):
 

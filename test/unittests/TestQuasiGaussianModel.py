@@ -6,8 +6,8 @@ sys.path.append('./')
 import unittest
 
 import numpy as np
-from src.termstructures.YieldCurve import YieldCurve
-from src.models.QuasiGaussianModel import QuasiGaussianModel
+from hybmc.termstructures.YieldCurve import YieldCurve
+from hybmc.models.QuasiGaussianModel import QuasiGaussianModel
 
 import QuantLib as ql
 

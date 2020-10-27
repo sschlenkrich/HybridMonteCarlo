@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from src.simulations.Payoffs import Payoff
-from src.mathutils.Regression import Regression
+from hybmc.simulations.Payoffs import Payoff
+from hybmc.mathutils.Regression import Regression
 
 
 class AmcPayoff(Payoff):

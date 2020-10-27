@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from src.simulations.Payoffs import Payoff
+from hybmc.simulations.Payoffs import Payoff
 
 
 class HazardProcess(Payoff):

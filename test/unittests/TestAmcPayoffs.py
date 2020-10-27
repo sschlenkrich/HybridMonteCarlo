@@ -8,12 +8,12 @@ import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.termstructures.YieldCurve import YieldCurve
-from src.models.HullWhiteModel import HullWhiteModel
-from src.simulations.McSimulation import McSimulation
-from src.simulations.Payoffs import Payoff, Fixed, LiborRate
-from src.mathutils.Regression import Regression
-from src.simulations.AmcPayoffs import AmcMax, AmcMin, AmcOne, AmcSum
+from hybmc.termstructures.YieldCurve import YieldCurve
+from hybmc.models.HullWhiteModel import HullWhiteModel
+from hybmc.simulations.McSimulation import McSimulation
+from hybmc.simulations.Payoffs import Payoff, Fixed, LiborRate
+from hybmc.mathutils.Regression import Regression
+from hybmc.simulations.AmcPayoffs import AmcMax, AmcMin, AmcOne, AmcSum
 
 
 class TestAmcPayoffs(unittest.TestCase):

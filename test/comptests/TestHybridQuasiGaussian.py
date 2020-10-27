@@ -8,15 +8,15 @@ import copy
 
 import numpy as np
 
-from src.mathutils.Helpers import BlackImpliedVol, BlackVega
-from src.termstructures.YieldCurve import YieldCurve
-from src.models.AssetModel import AssetModel
-from src.models.HybridModel import HybridModel
-from src.models.HullWhiteModel import HullWhiteModel
-from src.models.QuasiGaussianModel import QuasiGaussianModel
+from hybmc.mathutils.Helpers import BlackImpliedVol, BlackVega
+from hybmc.termstructures.YieldCurve import YieldCurve
+from hybmc.models.AssetModel import AssetModel
+from hybmc.models.HybridModel import HybridModel
+from hybmc.models.HullWhiteModel import HullWhiteModel
+from hybmc.models.QuasiGaussianModel import QuasiGaussianModel
 
-from src.simulations.McSimulation import McSimulation
-from src.simulations.Payoffs import Fixed, Pay, Asset, LiborRate, Max
+from hybmc.simulations.McSimulation import McSimulation
+from hybmc.simulations.Payoffs import Fixed, Pay, Asset, LiborRate, Max
 
 import matplotlib.pyplot as plt
 

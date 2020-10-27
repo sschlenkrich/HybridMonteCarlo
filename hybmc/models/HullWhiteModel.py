@@ -3,8 +3,8 @@
 
 import numpy as np
 from scipy.optimize import brentq
-from src.mathutils.Helpers import Black, Bachelier, BachelierImpliedVol
-from src.models.StochasticProcess import StochasticProcess
+from hybmc.mathutils.Helpers import Black, Bachelier, BachelierImpliedVol
+from hybmc.models.StochasticProcess import StochasticProcess
 
 
 class HullWhiteModel(StochasticProcess):

@@ -6,10 +6,10 @@ sys.path.append('./')
 import unittest
 
 import numpy as np
-from src.termstructures.YieldCurve import YieldCurve
-from src.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscreteNumeraire
-from src.simulations.McSimulation import McSimulation
-from src.simulations.Payoffs import Pay, LiborRate
+from hybmc.termstructures.YieldCurve import YieldCurve
+from hybmc.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscreteNumeraire
+from hybmc.simulations.McSimulation import McSimulation
+from hybmc.simulations.Payoffs import Pay, LiborRate
 
 class TestHullWhiteMonteCarlo(unittest.TestCase):
 

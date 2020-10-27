@@ -7,14 +7,14 @@ import unittest
 
 import numpy as np
 
-from src.mathutils.Helpers import BlackImpliedVol, BlackVega
-from src.termstructures.YieldCurve import YieldCurve
-from src.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscreteNumeraire
-from src.models.AssetModel import AssetModel
-from src.models.HybridModel import HybridModel
+from hybmc.mathutils.Helpers import BlackImpliedVol, BlackVega
+from hybmc.termstructures.YieldCurve import YieldCurve
+from hybmc.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscreteNumeraire
+from hybmc.models.AssetModel import AssetModel
+from hybmc.models.HybridModel import HybridModel
 
-from src.simulations.McSimulation import McSimulation
-from src.simulations.Payoffs import Fixed, Pay, Asset, LiborRate, Max
+from hybmc.simulations.McSimulation import McSimulation
+from hybmc.simulations.Payoffs import Fixed, Pay, Asset, LiborRate, Max
 
 import matplotlib.pyplot as plt
 

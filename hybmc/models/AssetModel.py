@@ -13,7 +13,7 @@
 #   sigma     = sigmaLV + volAdj (hybrid volatility adjuster, provided exogenously)
 
 import numpy as np
-from src.models.StochasticProcess import StochasticProcess
+from hybmc.models.StochasticProcess import StochasticProcess
 
 
 class AssetModel(StochasticProcess):

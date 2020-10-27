@@ -8,13 +8,13 @@ import unittest
 import numpy as np
 
 
-from src.termstructures.YieldCurve import YieldCurve
-from src.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscreteNumeraire
-from src.models.AssetModel import AssetModel
-from src.models.DeterministicModel import DcfModel
-from src.models.HybridModel import HybridModel
+from hybmc.termstructures.YieldCurve import YieldCurve
+from hybmc.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscreteNumeraire
+from hybmc.models.AssetModel import AssetModel
+from hybmc.models.DeterministicModel import DcfModel
+from hybmc.models.HybridModel import HybridModel
 
-from src.simulations.McSimulation import McSimulation
+from hybmc.simulations.McSimulation import McSimulation
 
 # a quick way to get a model
 def HWModel(rate=0.01, vol=0.0050, mean=0.03):

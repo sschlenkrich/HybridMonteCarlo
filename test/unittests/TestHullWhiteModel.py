@@ -6,8 +6,8 @@ sys.path.append('./')
 import unittest
 
 import numpy as np
-from src.termstructures.YieldCurve import YieldCurve
-from src.models.HullWhiteModel import HullWhiteModel
+from hybmc.termstructures.YieldCurve import YieldCurve
+from hybmc.models.HullWhiteModel import HullWhiteModel
 
 class TestHullWhiteModel(unittest.TestCase):
 

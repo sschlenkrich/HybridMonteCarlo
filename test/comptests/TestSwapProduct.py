@@ -10,11 +10,11 @@ import QuantLib as ql
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.termstructures.YieldCurve import YieldCurve
-from src.models.HullWhiteModel import HullWhiteModel
-from src.simulations.McSimulation import McSimulation
+from hybmc.termstructures.YieldCurve import YieldCurve
+from hybmc.models.HullWhiteModel import HullWhiteModel
+from hybmc.simulations.McSimulation import McSimulation
 
-from src.products.Swap import Swap, AmcSwap
+from hybmc.products.Swap import Swap, AmcSwap
 
 # a quick way to get a model
 def HWModel(rate=0.01, vol=0.0050, mean=0.03):
