@@ -8,7 +8,7 @@ import unittest
 import numpy as np
 from src.termstructures.YieldCurve import YieldCurve
 from src.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscreteNumeraire
-from src.simulations.MCSimulation import MCSimulation
+from src.simulations.McSimulation import McSimulation
 from src.simulations.Payoffs import Pay, LiborRate
 
 class TestHullWhiteMonteCarlo(unittest.TestCase):
@@ -28,13 +28,13 @@ class TestHullWhiteMonteCarlo(unittest.TestCase):
         nPaths = 2**11
         seed = 1234
         # risk-neutral simulation
-        mcSim = MCSimulation(self.modelRiskNeutral,times,nPaths,seed)
+        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed)
         discZeroBonds = np.array([
             [ 1.0 / self.modelRiskNeutral.numeraire(t,x) for t,x in zip(times,path) ]
             for path in mcSim.X ])
         mcZeroBondsRiskNeutral = np.average(discZeroBonds,axis=0)
         # discrete forward measure simulation
-        mcSim = MCSimulation(self.modelDiscreteFwd,times,nPaths,seed)
+        mcSim = McSimulation(self.modelDiscreteFwd,times,nPaths,seed)
         discZeroBonds = np.array([
             [ 1.0 / self.modelDiscreteFwd.numeraire(t,x) for t,x in zip(times,path) ]
             for path in mcSim.X ])
@@ -54,7 +54,7 @@ class TestHullWhiteMonteCarlo(unittest.TestCase):
         times = np.array([0.0, 2.0, 5.0, 10.0])
         nPaths = 2
         seed = 1234
-        mcSim = MCSimulation(self.modelRiskNeutral,times,nPaths,seed,False)
+        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed,False)
         # test exact values
         for k, t in enumerate(times):
             self.assertListEqual(list(mcSim.state(0,t)),list(mcSim.X[0][k]))
@@ -72,7 +72,7 @@ class TestHullWhiteMonteCarlo(unittest.TestCase):
         times = np.array([0.0, 2.0, 5.0, 10.0])
         nPaths = 2
         seed = 1234
-        mcSim = MCSimulation(self.modelRiskNeutral,times,nPaths,seed,True)
+        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed,True)
         idx = 0
         dT  = 5.7
         path = mcSim.path(idx)
@@ -93,7 +93,7 @@ class TestHullWhiteMonteCarlo(unittest.TestCase):
         nPaths = 2**11
         seed = 1234
         # risk-neutral simulation
-        mcSim = MCSimulation(self.modelRiskNeutral,times,nPaths,seed)
+        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed)
         #
         cfPVs = np.array([
             [ p.discountedAt(mcSim.path(idx)) for p in cfs ] for idx in range(nPaths) ])

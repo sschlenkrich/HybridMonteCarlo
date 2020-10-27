@@ -14,7 +14,7 @@ from src.models.AssetModel import AssetModel
 from src.models.DeterministicModel import DcfModel
 from src.models.HybridModel import HybridModel
 
-from src.simulations.MCSimulation import MCSimulation
+from src.simulations.McSimulation import McSimulation
 
 # a quick way to get a model
 def HWModel(rate=0.01, vol=0.0050, mean=0.03):
@@ -74,7 +74,7 @@ class TestHybridModel(unittest.TestCase):
         nPaths = 1
         seed = 314159265359
         # risk-neutral simulation
-        mcSim = MCSimulation(self.model,times,nPaths,seed,False)
+        mcSim = McSimulation(self.model,times,nPaths,seed,False)
         p = mcSim.path(0)
         #
         self.assertEqual(p.asset(0.0,'USD'),self.model.forAssetModels[0].X0)
@@ -96,7 +96,7 @@ class TestHybridModel(unittest.TestCase):
         # hybrid adjuster
         hybAdjTimes = np.array([0.0, 1.0, 2.0])
         # simulate deterministic model only
-        mcSim = MCSimulation(dcfModel0,times,nPaths,seed,False)
+        mcSim = McSimulation(dcfModel0,times,nPaths,seed,False)
         self.assertEqual(mcSim.path(0).zeroBond(1.0,10.0,None),curve0.discount(10.0)/curve0.discount(1.0))
         # simulate deterministic domestic model
         hwModel = HWModel(0.01,0.0050,0.03)
@@ -104,7 +104,7 @@ class TestHybridModel(unittest.TestCase):
         corr = np.identity(2)
         model = HybridModel('EUR',dcfModel0,['USD'],[asModel],[hwModel],corr)
         model.recalculateHybridVolAdjuster(hybAdjTimes)
-        mcSim = MCSimulation(model,times,nPaths,seed,False)
+        mcSim = McSimulation(model,times,nPaths,seed,False)
         dcfModel0.domAlias = 'EUR'
         p = mcSim.path(0)
         self.assertEqual(p.asset(0.0,'USD'),self.model.forAssetModels[0].X0)
@@ -113,7 +113,7 @@ class TestHybridModel(unittest.TestCase):
         # simulate deterministic foreign model
         model = HybridModel('EUR',hwModel,['USD'],[asModel],[dcfModel0],corr)
         model.recalculateHybridVolAdjuster(hybAdjTimes)
-        mcSim = MCSimulation(model,times,nPaths,seed,False)
+        mcSim = McSimulation(model,times,nPaths,seed,False)
         dcfModel0.domAlias = 'USD'
         p = mcSim.path(0)
         self.assertEqual(p.asset(0.0,'USD'),self.model.forAssetModels[0].X0)
@@ -125,7 +125,7 @@ class TestHybridModel(unittest.TestCase):
         corr = np.identity(1)
         model = HybridModel('EUR',dcfModel0,['USD'],[asModel],[dcfModel1],corr)
         model.recalculateHybridVolAdjuster(hybAdjTimes)
-        mcSim = MCSimulation(model,times,nPaths,seed,False)
+        mcSim = McSimulation(model,times,nPaths,seed,False)
         dcfModel0.domAlias = 'EUR'
         dcfModel1.domAlias = 'USD'
         p = mcSim.path(0)

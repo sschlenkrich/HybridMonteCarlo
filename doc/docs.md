@@ -9,7 +9,7 @@ Use cases are pricing complex financial instruments and exposure simulation.
 The Monte Carlo framework consists of four key elements:
 
   - StochastiProcess (and derived concrete models)
-  - MCSimulation
+  - McSimulation
   - a general Path representation
   - MCPayoffs that are used to compose cash flows of financial instruments
   

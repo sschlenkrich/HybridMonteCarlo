@@ -2,7 +2,7 @@
 
 import numpy as np
 
-class MCSimulation:
+class McSimulation:
 
     # Python constructor
     def __init__(self, model, times, nPaths, seed=123, timeInterpolation=True):

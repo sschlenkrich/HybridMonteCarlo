@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 from src.termstructures.YieldCurve import YieldCurve
 from src.models.HullWhiteModel import HullWhiteModel
-from src.simulations.MCSimulation import MCSimulation
+from src.simulations.McSimulation import McSimulation
 from src.simulations.Payoffs import Payoff, Fixed, LiborRate
 from src.mathutils.Regression import Regression
 from src.simulations.AmcPayoffs import AmcMax, AmcMin, AmcOne, AmcSum
@@ -30,11 +30,11 @@ class TestAmcPayoffs(unittest.TestCase):
         # regression
         nPaths = 2**7
         seed = 314159265359
-        self.mcSim0 = MCSimulation(self.model,times,nPaths,seed,False)
+        self.mcSim0 = McSimulation(self.model,times,nPaths,seed,False)
         # valuation
         nPaths = 2**7
         seed = 141592653593
-        self.mcSim1 = MCSimulation(self.model,times,nPaths,seed,False)
+        self.mcSim1 = McSimulation(self.model,times,nPaths,seed,False)
 
 
     def test_AmcRegression(self):

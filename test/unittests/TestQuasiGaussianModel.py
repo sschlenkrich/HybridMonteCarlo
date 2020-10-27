@@ -233,7 +233,7 @@ class TestQuasiGaussianModel(unittest.TestCase):
                            [0.6, 0.8, 1.0] ])
         #
         qg = ql.QuasiGaussianModel(ytsH,d,times,sigma,slope,curve,[ 0.0 ],delta,chi,Gamma,0.1)
-        mc = ql.RealMCSimulation(qg,[0.0, 5.0, 10.0],[0.0, 5.0, 10.0],1,1234,False,False,True)
+        mc = ql.RealMcSimulation(qg,[0.0, 5.0, 10.0],[0.0, 5.0, 10.0],1,1234,False,False,True)
         mc.simulate()
         dW = np.array(mc.brownian(0))
         dW = dW[:,:3]

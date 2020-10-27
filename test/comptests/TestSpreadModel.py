@@ -11,7 +11,7 @@ from src.termstructures.YieldCurve import YieldCurve
 from src.models.HullWhiteModel import HullWhiteModel
 from src.models.SpreadModel import SpreadModel
 
-from src.simulations.MCSimulation import MCSimulation
+from src.simulations.McSimulation import McSimulation
 from src.simulations.Payoffs import Fixed, Pay
 
 # a quick way to get a model
@@ -53,7 +53,7 @@ class TestSpreadModel(unittest.TestCase):
         nPaths = 2**10
         seed = 1234
         # risk-neutral simulation
-        mcSim = MCSimulation(self.model,times,nPaths,seed,False)
+        mcSim = McSimulation(self.model,times,nPaths,seed,False)
         # 
         T = 10.0
         P = Pay(Fixed(1.0),T)

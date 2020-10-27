@@ -14,7 +14,7 @@ from src.models.DeterministicModel import DcfModel
 from src.models.CreditModel import CreditModel
 
 
-from src.simulations.MCSimulation import MCSimulation
+from src.simulations.McSimulation import McSimulation
 
 # a quick way to get a model
 def HWModel(rate=0.01, vol=0.0050, mean=0.03):
@@ -42,7 +42,7 @@ class TestCreditModel(unittest.TestCase):
         nPaths = 1
         seed = 314159265359
         # risk-neutral simulation
-        mcSim = MCSimulation(model,times,nPaths,seed,False)
+        mcSim = McSimulation(model,times,nPaths,seed,False)
         p = mcSim.path(0)
         #
         self.assertEqual(p.zeroBond(0.0, 10.0, None), baseModel.yieldCurve.discount(10.0) )

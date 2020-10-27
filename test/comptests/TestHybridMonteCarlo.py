@@ -13,7 +13,7 @@ from src.models.HullWhiteModel import HullWhiteModel, HullWhiteModelWithDiscrete
 from src.models.AssetModel import AssetModel
 from src.models.HybridModel import HybridModel
 
-from src.simulations.MCSimulation import MCSimulation
+from src.simulations.McSimulation import McSimulation
 from src.simulations.Payoffs import Fixed, Pay, Asset, LiborRate, Max
 
 import matplotlib.pyplot as plt
@@ -85,7 +85,7 @@ class TestHybridModel(unittest.TestCase):
         nPaths = 2**13
         seed = 314159265359
         # risk-neutral simulation
-        mcSim = MCSimulation(self.model,times,nPaths,seed,False)
+        mcSim = McSimulation(self.model,times,nPaths,seed,False)
         # 
         T = 10.0
         P = Pay(Fixed(1.0),T)
@@ -180,7 +180,7 @@ class TestHybridModel(unittest.TestCase):
         nPaths = 2**13
         seed = 314159265359
         # risk-neutral simulation
-        mcSim = MCSimulation(model,times,nPaths,seed,False)
+        mcSim = McSimulation(model,times,nPaths,seed,False)
         # 
         T = 10.0
         for k, alias in enumerate(model.forAliases):

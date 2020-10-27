@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 from src.termstructures.YieldCurve import YieldCurve
 from src.models.HullWhiteModel import HullWhiteModel
-from src.simulations.MCSimulation import MCSimulation
+from src.simulations.McSimulation import McSimulation
 
 from src.products.Swap import Swap, AmcSwap
 
@@ -70,7 +70,7 @@ class TestSwapProduct(unittest.TestCase):
         obsTimes = np.linspace(0.0,10.0,121)
         nPaths = 2**7
         seed = 314159265359
-        mcSim = MCSimulation(model,obsTimes,nPaths,seed,True)
+        mcSim = McSimulation(model,obsTimes,nPaths,seed,True)
         swap = Swap(self.legs,self.pors,self.discYtsH)
         scen = swap.scenarios(obsTimes,mcSim)
         epe = np.average(np.maximum(scen,0.0),axis=0)
@@ -82,7 +82,7 @@ class TestSwapProduct(unittest.TestCase):
         obsTimes = np.array([0.0])
         nPaths = 1
         seed = 1
-        mcSim = MCSimulation(model,obsTimes,nPaths,seed,True)
+        mcSim = McSimulation(model,obsTimes,nPaths,seed,True)
         swap = AmcSwap(self.legs,self.pors,mcSim,2,self.discYtsH)
         #swap.cashFlows(8.1)
         timeLine = swap.timeLine([1.0, 2.0, 3.0])
@@ -99,10 +99,10 @@ class TestSwapProduct(unittest.TestCase):
         nPaths = 2**7
         # calibration
         seed0 = 314159265359
-        mcSim0 = MCSimulation(model,obsTimes,nPaths,seed0,True)
+        mcSim0 = McSimulation(model,obsTimes,nPaths,seed0,True)
         # simulation
         seed0 = 141592653593
-        mcSim1 = MCSimulation(model,obsTimes,nPaths,seed0,True)
+        mcSim1 = McSimulation(model,obsTimes,nPaths,seed0,True)
         swap = AmcSwap(self.legs,self.pors,mcSim0,2,self.discYtsH)
         scen = swap.scenarios(obsTimes,mcSim1)
         epe = np.average(np.maximum(scen,0.0),axis=0)
@@ -116,10 +116,10 @@ class TestSwapProduct(unittest.TestCase):
         nPaths = 2**7
         # calibration
         seed0 = 314159265359
-        mcSim0 = MCSimulation(model,obsTimes,nPaths,seed0,True)
+        mcSim0 = McSimulation(model,obsTimes,nPaths,seed0,True)
         # simulation
         seed0 = 141592653593
-        mcSim1 = MCSimulation(model,obsTimes,nPaths,seed0,True)
+        mcSim1 = McSimulation(model,obsTimes,nPaths,seed0,True)
         #
         swap = Swap(self.legs,self.pors,self.discYtsH)
         scen = swap.scenarios(obsTimes,mcSim1)
