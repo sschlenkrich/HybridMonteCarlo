@@ -18,7 +18,7 @@ class Product:
     def scenarios(self, obsTimes, sim):
         tl = self.timeLine(obsTimes)
         return np.array([ 
-            [ sum([ p.discountedAt(sim.path(k)) for p in tl[t] ]) for t in tl ]
-            for k in range(sim.nPaths) ])
+            [ sum([ payoff.discountedAt(path) for payoff in tl[t] ]) for t in tl ]
+            for path in sim.paths() ])
 
 # implement operations on time lines like join, observation times, ...

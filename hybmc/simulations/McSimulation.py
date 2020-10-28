@@ -43,6 +43,8 @@ class McSimulation:
     def path(self, idx):
         return Path(self, idx)
 
+    def paths(self):
+        return [ self.path(k) for k in range(self.nPaths) ]
 
 class Path:
 
