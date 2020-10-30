@@ -1,6 +1,6 @@
 # Hybrid Monte Carlo
 
-This repository includes Pyhon modules and Jupyter notebooks for Monte Carlo simulation of financial instruments.
+This repository includes Pyhon modules and Jupyter notebooks for Monte Carlo simulation of financial instruments. It is intended for research and education purpose.
 
 We provide a set of models that can be combined to form hybrid models for interest rates, FX and equities. Financial instruments are represented by individual payoff objects. The payoff objects are combined to form the contractual cash flows of the instrument.
 
