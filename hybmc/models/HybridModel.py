@@ -118,6 +118,8 @@ class HybridModel(StochasticProcess):
         return self.domRatesModel.numeraire(t,X[:self.domRatesModel.size()])
     
     def asset(self, t, X, alias):
+        if alias is None or alias==self.domAlias:
+            return 1.0
         k = self.index[alias]  # this should throw an exception if alias is unknown
         y = X[ self.modelsStartIdx[2 * k] : self.modelsStartIdx[2 * k] + self.forAssetModels[k].size() ]
         return self.forAssetModels[k].asset(t, y, alias)

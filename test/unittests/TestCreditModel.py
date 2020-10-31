@@ -10,6 +10,10 @@ import numpy as np
 
 from hybmc.termstructures.YieldCurve import YieldCurve
 from hybmc.models.HullWhiteModel import HullWhiteModel
+from hybmc.models.AssetModel import AssetModel
+from hybmc.models.HybridModel import HybridModel
+from hybmc.models.QuasiGaussianModel import QuasiGaussianModel
+
 from hybmc.models.DeterministicModel import DcfModel
 from hybmc.models.CreditModel import CreditModel
 
@@ -65,6 +69,32 @@ class TestCreditModel(unittest.TestCase):
         name1Model.evolve(0.0,X0,5.0,mcSim.dW[0,0,1:2],X1)
         self.assertTrue(np.allclose(X1,mcSim.X[0,1,2:],rtol=0.0,atol=1.0e-14))
 
+    def test_CreditHybridModel(self):
+        # Rates-FX
+        eurRates = HullWhiteModel(YieldCurve(0.015),0.03,np.array([10.0]),np.array([0.0050]))
+        usdRates = HullWhiteModel(YieldCurve(0.015),0.03,np.array([10.0]),np.array([0.0050]))
+        usdFx    = AssetModel(1.25,0.15)
+        hybModel = HybridModel('EUR',eurRates,['USD'],[usdFx],[usdRates],np.eye(3))
+        # Credit
+        spreadLevel = 0.05
+        spreadCurve = YieldCurve(spreadLevel)  # use 5% instantanous default probablility
+        mean  = 0.0001  # 1bp
+        sigma = 0.0100  # 100bp
+        skew = 0.5*sigma/spreadLevel
+        #
+        spreadModel = QuasiGaussianModel(spreadCurve,1,np.array([10.0]),np.array([[sigma]]),
+            np.array([[skew]]),np.array([[-skew]]),np.array([0.01]),np.array([mean]),np.identity(1))
+        corr = np.eye(4)
+        corr[1,3] = -0.85  # credit-FX
+        corr[3,1] = -0.85
+        creditModel = CreditModel(hybModel,['CP'],[spreadModel],corr)
+        print(creditModel.factorAliases())
+        #
+        obsTimes = np.linspace(0.0,10.0,3)
+        nPaths = 2
+        seed = 314159265359
+        mcSim = McSimulation(creditModel,obsTimes,nPaths,seed,True)
+        print(mcSim.X)
 
 
 if __name__ == '__main__':

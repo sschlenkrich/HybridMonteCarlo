@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 
 from hybmc.termstructures.YieldCurve import YieldCurve
 from hybmc.models.HullWhiteModel import HullWhiteModel
+from hybmc.models.AssetModel import AssetModel
+from hybmc.models.HybridModel import HybridModel
 from hybmc.simulations.McSimulation import McSimulation
 
 from hybmc.products.Swap import Swap, AmcSwap
@@ -132,6 +134,56 @@ class TestSwapProduct(unittest.TestCase):
         plt.plot(obsTimes,epe)
         #
         plt.show()
+
+
+    def test_SingleCurrencySwapSetup(self):
+        swap = Swap(self.legs,self.pors,discYtsHs=None,currencyAliases='EUR')
+        timeLine = swap.timeLine([8.0])
+        #
+        for t in timeLine:
+            print('ObsTime: %.2f' % t)
+            for p in timeLine[t]:
+                print(p)
+
+    def test_MultiCurrencySwapSetup(self):
+        swap = Swap(self.legs,self.pors,discYtsHs=None,currencyAliases=['EUR','USD'])
+        timeLine = swap.timeLine([8.0])
+        #
+        for t in timeLine:
+            print('ObsTime: %.2f' % t)
+            for p in timeLine[t]:
+                print(p)
+
+    def test_FxSwap(self):
+        today = ql.Settings.instance().getEvaluationDate()
+        startDate = ql.WeekendsOnly().advance(today,ql.Period('5d'))
+        endDate   = ql.WeekendsOnly().advance(today,ql.Period('1y'))
+        eurLeg = ql.Leg([
+            ql.SimpleCashFlow(1.0,startDate),
+            ql.SimpleCashFlow(-1.0,endDate)
+        ])
+        usdLeg = ql.Leg([
+            ql.SimpleCashFlow(1.25,startDate),
+            ql.SimpleCashFlow(-1.25,endDate)
+        ])
+        swap = Swap([eurLeg,usdLeg],[1.0,-1.0],discYtsHs=None,currencyAliases=['EUR','USD'])
+        obsTimes = np.array([0.0, 0.5, 1.1])
+        timeLine = swap.timeLine(obsTimes)
+        #
+        for t in timeLine:
+            print('ObsTime: %.2f' % t)
+            for p in timeLine[t]:
+                print(p)
+        #
+        # we set up a very simplistic hybrid model
+        eurModel = HWModel()
+        usdModel = HWModel()
+        fxModel  = AssetModel(1.25,0.15)
+        hybModel = HybridModel('EUR',eurModel,['USD'],[fxModel],[usdModel],np.eye(3))
+        mcSim    = McSimulation(hybModel,obsTimes,2,123,True)
+        V = swap.scenarios(obsTimes,mcSim)
+        print(V)
+
 
 
 if __name__ == '__main__':
