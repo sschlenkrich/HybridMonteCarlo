@@ -198,6 +198,17 @@ class SwapRate(Payoff):
     def __str__(self):
         return 'S_%s(%.2f;%.2f,%.2f)' % (self.alias,self.obsTime,self.floatTimes[0],self.floatTimes[-1])
 
+class FixedLeg(Payoff):
+    def __init__(self, obsTime, payTimes, payWeights, alias=None):
+        Payoff.__init__(self, obsTime)
+        self.payTimes = payTimes
+        self.payWeights = payWeights
+        self.alias = alias
+    def at(self, p):
+        return sum([ w*p.zeroBond(self.obsTime,T,self.alias) for w,T in zip(self.payWeights,self.payTimes) ])
+    def __str__(self):
+        return 'F_%s(%.2f;%.2f,%.2f)' % (self.alias,self.obsTime,self.payTimes[0],self.payTimes[-1])
+
 # arithmetic operations
 
 class Axpy(Payoff):

@@ -12,6 +12,10 @@ The Monte Carlo framework consists of four key elements:
   - McSimulation
   - a general Path representation
   - MCPayoffs that are used to compose cash flows of financial instruments
+
+  An illustration of the object structure is given below.
+
+  <img src="./Framework.png" width="800">
   
 ### Stochastic Process Interface
 
