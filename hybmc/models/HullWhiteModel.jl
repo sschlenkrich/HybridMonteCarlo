@@ -156,3 +156,11 @@ function evolve(self::HullWhiteModel, t0, X0, dt, dW, X1)
     X1[2] = s1
     return nothing
 end
+
+# the short rate over an integration time period
+# this is required for drift calculation in multi-asset and hybrid models
+function shortRateOverPeriod(self::HullWhiteModel, t0, dt, X0, X1)
+    B_d = discount(self.yieldCurve,t0) / discount(self.yieldCurve,t0 + dt)  # deterministic drift part for r_d
+    x_av = 0.5 * (X0[1] + X1[1])
+    return log(B_d) / dt + x_av
+end
