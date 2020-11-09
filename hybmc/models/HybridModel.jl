@@ -1,7 +1,9 @@
 
-using LinearAlgebra
+include("../models/StochasticProcess.jl")
 
-struct HybridModel
+using LinearAlgebra, Interpolations
+
+struct HybridModel <: StochasticProcess
     domAlias         #  name of our domestic (numeraire) currency
     domRatesModel    #  domestic rates model specifies numeraire
     forAliases       #  list of foreign currencies (all relative to dom currency)
@@ -118,7 +120,7 @@ end
         qAdj_ = Array(qAdj)
         # we need to extend the input state for our asset mode to account for drift and adjuster
         y0_ = append!(Array(y0), [0.0, 0.0])
-        # y0_[end] = hybridVolAdjuster(self, k, t0)  # implement adjuster!
+        y0_[end] = hybridVolAdjuster(self, k, t0)  # implement adjuster!
         assetVol = volatility(self.forAssetModels[k], t0, y0_)
         qAdj_ *= (assetVol*sqrt(dt))
         dw_rates_ = dw_rates - qAdj_  #  create a new vector
@@ -172,3 +174,16 @@ end
     x = X[ startIdx : endIdx ]
     return zeroBond(self.forRatesModels[k], t, T, x, alias)
 end
+
+# adjuster methodology for stochastic rates and FX volatility
+
+function hybridVolAdjuster(self::HybridModel, forIdx, t)
+    if isnothing(self.hybAdjTimes)
+        return 0.0  # default
+    end
+    # linear interpolation with constant extrapolation
+    # maybe better use scipy interpolation with linear extraplation
+    lnterp = LinearInterpolation(self.hybAdjTimes,@view model.hybVolAdj[forIdx,:])
+    return interp(t)
+end
+

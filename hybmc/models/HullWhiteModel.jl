@@ -1,9 +1,11 @@
 include("../mathutils/Helpers.jl")
+include("../models/StochasticProcess.jl")
+
 
 using Roots
 
 # the actual data structure for the model
-struct HullWhiteModel
+struct HullWhiteModel <: StochasticProcess
     yieldCurve
     meanReversion
     volatilityTimes::Array

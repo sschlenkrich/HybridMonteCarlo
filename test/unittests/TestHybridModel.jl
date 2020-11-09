@@ -21,9 +21,9 @@ function setUp()
     domAlias = "EUR"
     domModel = HwModel(0.01, 0.0050, 0.03)
     forAliases = [ "USD", "GBP", "JPY" ]
-    spotS0     = [   1.0,   1.0,   1.0 ]
+    spotS0     = [   1.0,   2.0,   3.0 ]
     spotVol    = [   0.3,   0.3,   0.3 ]
-    rates      = [  0.01,  0.01,  0.01 ]
+    rates      = [  0.02,  0.03,  0.04 ]
     ratesVols  = [ 0.006, 0.007, 0.008 ]
     mean       = [  0.01,  0.01,  0.01 ]
     #
@@ -45,10 +45,23 @@ function setUp()
 end
 
 @testset "test_modelSetup" begin
-    #x = setUp()
-    #println(x._size)
-    #println(x._factors)
-    #print(initialValues(x))
+    model = setUp()
+    @test stateSize(model) == 11
+    @test factors(model)  == 7
+    @test size(initialValues(model))[1] == stateSize(model)
+end
+
+@testset "test_hybridModel" begin
+    model = setUp()
+    x = initialValues(model)
+    @test asset(model,0.0,x,"USD") == model.forAssetModels[1].X0
+    @test asset(model,0.0,x,"GBP") == model.forAssetModels[2].X0
+    @test asset(model,0.0,x,"JPY") == model.forAssetModels[3].X0
+    #
+    @test zeroBond(model,0.0,5.0,x,"EUR") == discount(model.domRatesModel.yieldCurve,5.0)
+    @test zeroBond(model,0.0,5.0,x,"USD") == discount(model.forRatesModels[1].yieldCurve,5.0)
+    @test zeroBond(model,0.0,5.0,x,"GBP") == discount(model.forRatesModels[2].yieldCurve,5.0)
+    @test zeroBond(model,0.0,5.0,x,"JPY") == discount(model.forRatesModels[3].yieldCurve,5.0)
 end
 
 @testset "test_hybridSimulation" begin
