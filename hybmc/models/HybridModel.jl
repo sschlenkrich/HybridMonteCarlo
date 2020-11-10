@@ -160,11 +160,7 @@ end
 end
 
 @views function zeroBond(self::HybridModel, t, T, X, alias)
-    if isnothing(alias)
-        x = X[begin:stateSize(self.domRatesModel)]
-        return zeroBond(self.domRatesModel, t, T, x, alias)
-    end
-    if alias==self.domAlias
+    if isnothing(alias) || alias==self.domAlias
         x = X[begin:stateSize(self.domRatesModel)]
         return zeroBond(self.domRatesModel, t, T, x, alias)
     end

@@ -17,22 +17,27 @@ end
 
 # simplify payoff scripting
 
+import Base.+ 
 (+)(x::Payoff,y::Payoff) = Axpy(1.0,x,y)
 (+)(x::Payoff,y) = Axpy(1.0,x,Fixed(y))
 (+)(x,y::Payoff) = Axpy(1.0,Fixed(x),y)
 #
+import Base.-
 (-)(x::Payoff,y::Payoff) = Axpy(-1.0,y,x)
 (-)(x::Payoff,y) = Axpy(-1.0,Fixed(y),9x)
 (-)(x,y::Payoff) = Axpy(-1.0,y,Fixed(x))
 #
+import Base.*
 (*)(x::Payoff,y::Payoff) = Mult(x,y)
 (*)(x::Payoff,y) = Mult(x,Fixed(y))
 (*)(x,y::Payoff) = Mult(Fixed(x),y)
 #
+import Base./
 (/)(x::Payoff,y::Payoff) = Div(x,y)
 (/)(x::Payoff,y) = Div(x,Fixed(y))
 (/)(x,y::Payoff) = Div(Fixed(x),y)
 #
+import Base.%
 (%)(x::Payoff,t) = Pay(x,t)
 
 # basic payoffs
@@ -88,13 +93,14 @@ struct LiborRate <: Payoff
     yearFraction
     tenorBasis
     alias
+    _dummy_::Bool  # avoid stack overflow during constructor
 end
 
 function LiborRate(obsTime,startTime,endTime,yearFraction=nothing,tenorBasis=1.0,alias=nothing)
     if isnothing(yearFraction)
         yearFraction = endTime - startTime
     end
-    return LiborRate(obsTime,startTime,endTime,yearFraction,tenorBasis,alias)
+    return LiborRate(obsTime,startTime,endTime,yearFraction,tenorBasis,alias,true)
 end
 
 function at(self::LiborRate, p::Path)

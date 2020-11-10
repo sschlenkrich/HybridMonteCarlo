@@ -8,10 +8,11 @@ struct McSimulation
     times
     nPaths
     seed
+    timeInterpolation
     X
 end
 
-function McSimulation(model,times,nPaths,seed)
+function McSimulation(model,times,nPaths,seed=123,timeInterpolation=true)
     Random.seed!(seed) # Setting the seed
     norm = Normal()
     dW = rand( norm, (nPaths,size(times)[1]-1,factors(model)) )
@@ -22,14 +23,14 @@ function McSimulation(model,times,nPaths,seed)
             evolve(model,times[j],X[i,j,:],times[j+1]-times[j],dW[i,j,:],X[i,j+1,:])
         end
     end
-    return McSimulation(model,times,nPaths,seed,X)
+    return McSimulation(model,times,nPaths,seed,timeInterpolation,X)
 end
 
 function state(self::McSimulation, idx, t)
     if idx>self.nPaths
         throw(ArgumentError("idx<=self.nPaths required."))
     end
-    tIdx = searchsortedfirst(self.volatilityTimes,t)
+    tIdx = searchsortedfirst(self.times,t)
     tIdx = min(tIdx,size(self.times)[1])  # use the last element
     if abs(self.times[tIdx]-t)<0.5/365  # we give some tolerance of half a day
         return @view self.X[idx,tIdx,:]
@@ -42,7 +43,7 @@ function state(self::McSimulation, idx, t)
     end
     # linear interpolation
     rho = (self.times[tIdx] - t) / (self.times[tIdx] - self.times[tIdx-1])
-    return rho * self.X[idx,tIdx-1] + (1.0-rho) * self.X[idx,tIdx]  # better use view?
+    return rho * self.X[idx,tIdx-1,:] + (1.0-rho) * self.X[idx,tIdx,:]  # better use view?
 end
 
 struct Path
