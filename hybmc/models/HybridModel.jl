@@ -183,3 +183,27 @@ function hybridVolAdjuster(self::HybridModel, forIdx, t)
     return interp(t)
 end
 
+
+function hybridVolAdjuster(self::HybridModel, hybAdjTimes::Array)
+    if !(size(hybAdjTimes)[1]>1)
+        throw(ArgumentError("size(hybAdjTimes)[1]>1 required."))
+    end
+    if !(hybAdjTimes[1]==0.0)
+        throw(ArgumentError("hybAdjTimes[0]==0.0 required."))
+    end
+    for k = 2:size(hybAdjTimes)[1]
+        if !(hybAdjTimes[k]>hybAdjTimes[k-1])
+            throw(ArgumentError("hybAdjTimes[k]>hybAdjTimes[k-1] required."))
+        end
+    end
+    # initialise 
+    localVol = zeros((size(self.forAliases)[1],size(hybAdjTimes)[1]))
+    hybrdVol = ones((size(self.forAliases)[1],size(hybAdjTimes)[1])) #  1.0 is required for p calculation
+    hybVolAdj = zeros((size(self.forAliases)[1],size(hybAdjTimes)[1]))
+    S0 = [ asset(m, 0.0, initialValues(m), nothing) for m in self.forAssetModels ]
+    #
+    println(localVol)
+    println(hybrdVol)
+    println(S0)
+    return nothing
+end

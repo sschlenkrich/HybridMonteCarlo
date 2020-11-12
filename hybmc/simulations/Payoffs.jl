@@ -2,6 +2,8 @@
 include("../simulations/McSimulation.jl")
 
 abstract type Payoff end
+abstract type Leaf <: Payoff end
+abstract type BinaryNode <: Payoff end
 
 function at(self::Payoff, p::Path)
     throw(ArgumentError("Implementation of method at() required."))
@@ -15,6 +17,26 @@ function discountedAt(self::Payoff, p::Path)
     return at(self,p) / numeraire(p,obsTime(self))
 end
 
+function observationTimes(self::Payoff)
+    throw(ArgumentError("Implementation of method observationTimes() required."))
+end
+
+function observationTimes(self::Leaf)
+    return Set([ obsTime(self) ])
+end
+
+function observationTimes(self::BinaryNode)
+    return union(observationTimes(self.x),observationTimes(self.y))
+end
+
+function observationTimes(list::Array)
+    times = Set{Float64}()
+    for item in list
+        times = union(times,observationTimes(item))
+    end
+    return sort([ t for t in times ])
+end
+
 # simplify payoff scripting
 
 import Base.+ 
@@ -24,7 +46,7 @@ import Base.+
 #
 import Base.-
 (-)(x::Payoff,y::Payoff) = Axpy(-1.0,y,x)
-(-)(x::Payoff,y) = Axpy(-1.0,Fixed(y),9x)
+(-)(x::Payoff,y) = Axpy(-1.0,Fixed(y),x)
 (-)(x,y::Payoff) = Axpy(-1.0,y,Fixed(x))
 #
 import Base.*
@@ -39,10 +61,32 @@ import Base./
 #
 import Base.%
 (%)(x::Payoff,t) = Pay(x,t)
+#
+import Base.<
+(<)(x::Payoff,y::Payoff) = Logical(x,y,(a,b)->Float64(a<b))
+(<)(x::Payoff,y) = Logical(x,Fixed(y),(a,b)->Float64(a<b))
+(<)(x,y::Payoff) = Logical(Fixed(x),y,(a,b)->Float64(a<b))
+import Base.<=
+(<=)(x::Payoff,y::Payoff) = Logical(x,y,(a,b)->Float64(a<=b))
+(<=)(x::Payoff,y) = Logical(x,Fixed(y),(a,b)->Float64(a<=b))
+(<=)(x,y::Payoff) = Logical(Fixed(x),y,(a,b)->Float64(a<=b))
+import Base.==
+(==)(x::Payoff,y::Payoff) = Logical(x,y,(a,b)->Float64(a==b))
+(==)(x::Payoff,y) = Logical(x,Fixed(y),(a,b)->Float64(a==b))
+(==)(x,y::Payoff) = Logical(Fixed(x),y,(a,b)->Float64(a==b))
+import Base.>=
+(>=)(x::Payoff,y::Payoff) = Logical(x,y,(a,b)->Float64(a>=b))
+(>=)(x::Payoff,y) = Logical(x,Fixed(y),(a,b)->Float64(a>=b))
+(>=)(x,y::Payoff) = Logical(Fixed(x),y,(a,b)->Float64(a>=b))
+import Base.>
+(>)(x::Payoff,y::Payoff) = Logical(x,y,(a,b)->Float64(a>b))
+(>)(x::Payoff,y) = Logical(x,Fixed(y),(a,b)->Float64(a>b))
+(>)(x,y::Payoff) = Logical(Fixed(x),y,(a,b)->Float64(a>b))
+
 
 # basic payoffs
 
-struct Fixed <: Payoff
+struct Fixed <: Leaf
     x
 end
 
@@ -58,10 +102,13 @@ end
 
 at(self::Pay, p::Path) = at(self.x, p)
 obsTime(self::Pay) = self.payTime
+function observationTimes(self::Pay)
+    return union(observationTimes(self.x),[self.payTime])
+end
 
 #
 
-struct Asset <: Payoff
+struct Asset <: Leaf
     obsTime
     alias
 end
@@ -74,7 +121,7 @@ obsTime(self::Asset) = self.obsTime
 
 # basic rates payoffs
 
-struct ZeroBond <: Payoff
+struct ZeroBond <: Leaf
     obsTime
     payTime
     alias
@@ -86,7 +133,7 @@ obsTime(self::ZeroBond) = self.obsTime
 
 #
 
-struct LiborRate <: Payoff
+struct LiborRate <: Leaf
     obsTime
     startTime
     endTime
@@ -112,7 +159,7 @@ obsTime(self::LiborRate) = self.obsTime
 
 #
 
-struct SwapRate <: Payoff
+struct SwapRate <: Leaf
     obsTime
     floatTimes
     floatWeights
@@ -132,7 +179,7 @@ obsTime(self::SwapRate) = self.obsTime
 
 #
 
-struct FixedLeg <: Payoff
+struct FixedLeg <: Leaf
     obsTime
     payTimes
     payWeights
@@ -147,7 +194,7 @@ obsTime(self::FixedLeg) = self.obsTime
 
 # arithmetic operations
 
-struct Axpy <: Payoff
+struct Axpy <: BinaryNode
     a
     x::Payoff
     y::Payoff
@@ -158,7 +205,7 @@ obsTime(self::Axpy) = 0.0
 
 #
 
-struct Mult <: Payoff
+struct Mult <: BinaryNode
     x::Payoff
     y::Payoff
 end
@@ -166,11 +213,44 @@ end
 at(self::Mult, p::Path) = at(self.x,p) * at(self.y,p)
 obsTime(self::Mult) = 0.0
 
-struct Div <: Payoff
+#
+
+struct Div <: BinaryNode
     x::Payoff
     y::Payoff
 end
 
 at(self::Div, p::Path) = at(self.x,p) / at(self.y,p)
+obsTime(self::Div) = 0.0
+
+#
+
+struct Max <: BinaryNode
+    x::Payoff
+    y::Payoff
+end
+
+at(self::Max, p::Path) = max(at(self.x,p),at(self.y,p))
+obsTime(self::Div) = 0.0
+
+#
+
+struct Min <: BinaryNode
+    x::Payoff
+    y::Payoff
+end
+
+at(self::Min, p::Path) = max(at(self.x,p),at(self.y,p))
+obsTime(self::Div) = 0.0
+
+#
+
+struct Logical <: BinaryNode
+    x::Payoff
+    y::Payoff
+    op
+end
+
+at(self::Logical, p::Path) = self.op(at(self.x,p),at(self.y,p))
 obsTime(self::Div) = 0.0
 

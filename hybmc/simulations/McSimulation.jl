@@ -47,7 +47,7 @@ function state(self::McSimulation, idx, t)
 end
 
 struct Path
-    simulation
+    simulation::McSimulation
     idx
 end
 

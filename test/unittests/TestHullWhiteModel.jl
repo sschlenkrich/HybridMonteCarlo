@@ -61,7 +61,7 @@ end
 @testset "test_monteCarloSimulation" begin
     model = setup()
     times = Array(range(0.0, stop=10.0, length=11))
-    nPaths = 2^10
+    nPaths = 2^11
     seed = 1234
     # risk-neutral simulation
     mcSim = McSimulation(model,times,nPaths,seed)
@@ -70,12 +70,12 @@ end
         for i = 1:size(times)[1], j = 1:nPaths ]    
     mcZeroBondsRiskNeutral = mean(discZeroBonds, dims=2)
     zeroBonds = [ discount(model.yieldCurve,t) for t in times ]
-    # @printf("  T     ZeroRate    RiskNeutral\n")
+    @printf("  T     ZeroRate    RiskNeutral\n")
     for k = 2:size(times)[1]
         t           = times[k]
         zeroRate    = -log(zeroBonds[k])/t
         riskNeutral = -log(mcZeroBondsRiskNeutral[k])/t
-        # @printf(" %4.1f   %8.6lf    %8.6lf\n", t, zeroRate, riskNeutral)
+        @printf(" %4.1f   %8.5lf    %8.5lf\n", t, zeroRate, riskNeutral)
         @test isapprox(zeroRate,riskNeutral,atol=1.0e-8, rtol=2.0e-2)
     end
     return nothing
@@ -88,15 +88,9 @@ end
     dT0 = 2.0 / 365
     dT1 = 0.5
     cfs = [ Pay(LiborRate(t,t+dT0,t+dT0+dT1),t+dT0+dT1) for t in liborTimes]
-    # times = set.union(*[ p.observationTimes() for p in cfs ])
-    # times = np.array(sorted(list(times)))
-    times = 
-    [ 0., 0.50547945, 1., 1.50547945, 2., 2.50547945, 3., 3.50547945,
-      4., 4.50547945, 5., 5.50547945, 6., 6.50547945, 7., 7.50547945,
-      8., 8.50547945, 9., 9.50547945, 10., 10.50547945]
-    times =  Array(range(0.0, stop=10.0, length=101))
+    times = observationTimes(cfs)
     #
-    nPaths = 2^13
+    nPaths = 2^11
     seed = 4321
     # risk-neutral simulation
     mcSim = McSimulation(model,times,nPaths,seed)

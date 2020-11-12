@@ -73,3 +73,9 @@ end
     cSim = McSimulation(model,times,nPaths,seed)
     #println(factors(model.domRatesModel))
 end
+
+@testset "test_hybridAdjuster" begin
+    model = setUp()
+    adjTimes = [0.0, 1.0]
+    hybridVolAdjuster(model,adjTimes)
+end
