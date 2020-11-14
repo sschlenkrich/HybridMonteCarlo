@@ -11,7 +11,11 @@ struct DeterministicModel <: StochasticProcess
 end
 
 function DeterministicModel(domAlias,domCurve,forAliases,forAssetSpots,forCurves)
-    index = Dict([ (forAliases[k],k) for k = 1:size(forAliases)[1] ])
+    if !isnothing(forAliases)
+        index = Dict([ (forAliases[k],k) for k = 1:size(forAliases)[1] ])
+    else
+        index = nothing
+    end
     return DeterministicModel(domAlias,domCurve,forAliases,forAssetSpots,forCurves,index)
 end
 

@@ -114,7 +114,7 @@ struct Asset <: Leaf
 end
 
 Asset(obsTime) = Asset(obsTime,nothing)
-at(self::Asset, p::Path) = asset(p,self.t,self.alias)
+at(self::Asset, p::Path) = asset(p,self.obsTime,self.alias)
 obsTime(self::Asset) = self.obsTime
 
 #
@@ -143,7 +143,7 @@ struct LiborRate <: Leaf
     _dummy_::Bool  # avoid stack overflow during constructor
 end
 
-function LiborRate(obsTime,startTime,endTime,yearFraction=nothing,tenorBasis=1.0,alias=nothing)
+function LiborRate(obsTime,startTime,endTime;yearFraction=nothing,tenorBasis=1.0,alias=nothing)
     if isnothing(yearFraction)
         yearFraction = endTime - startTime
     end

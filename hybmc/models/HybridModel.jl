@@ -50,6 +50,11 @@ function HybridModel(domAlias, domRatesModel,
         correlations,index,_size,_factors,modelsStartIdx,L,hybAdjTimes,hybVolAdj)
 end
 
+HybridModel(model::HybridModel,hybAdjTimes,hybVolAdj) =
+    HybridModel(model.domAlias, model.domRatesModel, model.forAliases, model.forAssetModels,
+        model.forRatesModels, model.correlations, model.index, model._size, model._factors,
+        model.modelsStartIdx, model.L, hybAdjTimes, hybVolAdj)
+
 # stochastic process interface
     
 function stateSize(self::HybridModel)   # dimension of X(t)
@@ -142,7 +147,7 @@ end
 # interface for payoff calculation
 
 @views function numeraire(self::HybridModel, t, X)
-    return numeraire(self.domRatesModel,t,X[:self.domRatesModel.size()])
+    return numeraire(self.domRatesModel,t,X[begin:stateSize(self.domRatesModel)])
 end
     
 @views function asset(self::HybridModel, t, X, alias)
@@ -179,7 +184,7 @@ function hybridVolAdjuster(self::HybridModel, forIdx, t)
     end
     # linear interpolation with constant extrapolation
     # maybe better use scipy interpolation with linear extraplation
-    lnterp = LinearInterpolation(self.hybAdjTimes,@view model.hybVolAdj[forIdx,:])
+    interp = LinearInterpolation(self.hybAdjTimes,@view self.hybVolAdj[forIdx,:])
     return interp(t)
 end
 
@@ -202,8 +207,76 @@ function hybridVolAdjuster(self::HybridModel, hybAdjTimes::Array)
     hybVolAdj = zeros((size(self.forAliases)[1],size(hybAdjTimes)[1]))
     S0 = [ asset(m, 0.0, initialValues(m), nothing) for m in self.forAssetModels ]
     #
-    println(localVol)
-    println(hybrdVol)
-    println(S0)
-    return nothing
+    # calculate vols at zero
+    for i = 1:size(S0)[1]
+        y0 = append!(initialValues(self.forAssetModels[i]), [0.0, 0.0])
+        localVol[i,1] = volatility(self.forAssetModels[i], 0.0, y0)
+        hybrdVol[i,1] = localVol[i,1]
+    end
+    # now we start with the actual methodology...
+    corrStartIdx = factors(self.domRatesModel)        
+    for i = 1:size(S0)[1]
+        # we collect all relevant correlations
+        # recall, 
+        #   Y0 is domestic rates model
+        #   X1 is asset (or FX) model
+        #   Y1 is forign rates model
+        #
+        colIdx   = corrStartIdx + 1
+        # domestic rates vs FX, ASSUME vol-FX correlation is zero
+        rhoY0X1 = self.correlations[ begin:factors(self.domRatesModel), colIdx]   #  
+        # foreign rates vs FX, ASSUME vol-FX correlation is zero
+        startIdx = colIdx   + factors(self.forAssetModels[i])
+        endIdx   = startIdx + factors(self.forRatesModels[i]) - 1
+        # rhoX1Y1 = self.correlations[colIdx, startIdx : endIdx]
+        rhoY1X1 = self.correlations[startIdx : endIdx, colIdx]  # use col-vector to avoid transpose
+        # rates vs rates, ASSUME all vol-... correlation are zero
+        rhoY0Y1 = self.correlations[ begin:factors(self.domRatesModel), startIdx : endIdx ]
+        # update stochastic factor index
+        corrStartIdx += (factors(self.forAssetModels[i]) + factors(self.forRatesModels[i]))
+        # bootstrap over adjuster times
+        for (k, T) in [ e for e in enumerate(hybAdjTimes) ][2:end]
+            # ATM forward and effective local volatility
+            dfDom = zeroBond(self.domRatesModel, 0.0, T, initialValues(self.domRatesModel), nothing)
+            dfFor = zeroBond(self.forRatesModels[i], 0.0, T, initialValues(self.forRatesModels[i]), nothing)
+            S = S0[i] * dfFor / dfDom  # maybe it's worth to save S for debugging
+            y = zeros(stateSize(self.forAssetModels[i]) + 2)  # this is asset model-dependent
+            y[1] = log(S / S0[i])
+            localVol[i,k] = volatility(self.forAssetModels[i],hybAdjTimes[k], y)
+            # calculate derivative of hybrid variance
+            hPrime = zeros(k)
+            for (j, t) in enumerate(hybAdjTimes[begin:k])
+                sigmaP0      = zeroBondVolatility(self.domRatesModel, t, T)
+                sigmaP0Prime = zeroBondVolatilityPrime(self.domRatesModel, t, T)
+                sigmaP1      = zeroBondVolatility(self.forRatesModels[i], t, T)
+                sigmaP1Prime = zeroBondVolatilityPrime(self.forRatesModels[i], t, T)
+                #
+                sigma0 = sigmaP0 - rhoY0Y1*sigmaP1 + hybrdVol[i,j]*rhoY0X1  # bootstrapping enters here
+                sum0 = transpose(sigmaP0Prime) * sigma0
+                #
+                sigma1 = sigmaP1 - transpose(rhoY0Y1)*sigmaP0 - hybrdVol[i,j]*rhoY1X1  # bootstrapping enters here
+                sum1 = transpose(sigma1) * sigmaP1Prime
+                # collect terms and finish
+                hPrime[j] = 2.0*(sum0 + sum1)  # this will likely fail for deterministic models
+            end
+            p = 0.5 * hPrime[k] * (hybAdjTimes[k] - hybAdjTimes[k - 1])
+            q = 0.5 * hPrime[k-1] * (hybAdjTimes[k] - hybAdjTimes[k - 1])
+            for j = 2:k-1
+                q += 0.5 * (hPrime[j - 1] + hPrime[j]) * (hybAdjTimes[j] - hybAdjTimes[j - 1])
+            end
+            # let's see if this works...
+            root2 = p*p / 4.0 - q + localVol[i,k] * localVol[i,k]
+            if !(root2>=0.0)
+                throw(ArgumentError("root2>=0.0 required."))
+            end
+            hybrdVol[i,k] = -p / 2.0 + sqrt(root2)
+            if !(hybrdVol[i,k]>0.0)
+                throw(ArgumentError("hybrdVol[i,k]>0.0 required."))
+            end
+            # maybe we should add some more safety checks here...
+            hybVolAdj[i,k] = hybrdVol[i,k] - localVol[i,k]
+        end
+    end
+    #
+    return hybVolAdj
 end
