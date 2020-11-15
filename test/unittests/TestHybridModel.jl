@@ -153,7 +153,7 @@ end
 
 @testset "test_hybridSimulation" begin
     model = setUp()
-    times = append!(Array(range(0,stop=10.0,length=10)), [10.5])
+    times = append!(Array(range(0,stop=10.0,length=11)), [10.5])
     nPaths = 2^13
     seed = 141592653593
     # risk-neutral simulation
