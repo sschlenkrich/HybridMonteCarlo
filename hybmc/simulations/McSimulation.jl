@@ -9,6 +9,7 @@ struct McSimulation
     nPaths
     seed
     timeInterpolation
+    dW
     X
 end
 
@@ -23,7 +24,20 @@ function McSimulation(model,times,nPaths,seed=123,timeInterpolation=true)
             evolve(model,times[j],X[i,j,:],times[j+1]-times[j],dW[i,j,:],X[i,j+1,:])
         end
     end
-    return McSimulation(model,times,nPaths,seed,timeInterpolation,X)
+    return McSimulation(model,times,nPaths,seed,timeInterpolation,dW,X)
+end
+
+function McSimulationWithBrownians(model,times, dW, timeInterpolation=true)
+    nPaths = size(dW)[1]
+    seed = nothing
+    X = zeros((nPaths,size(times)[1],stateSize(model)))
+    @views for i = 1:nPaths
+        X[i,1,:] = initialValues(model)
+        for j = 1:size(times)[1]-1
+            evolve(model,times[j],X[i,j,:],times[j+1]-times[j],dW[i,j,:],X[i,j+1,:])
+        end
+    end
+    return McSimulation(model,times,nPaths,seed,timeInterpolation,dW,X)
 end
 
 function state(self::McSimulation, idx, t)
