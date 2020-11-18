@@ -5,25 +5,26 @@ import numpy as np
 class McSimulation:
 
     # Python constructor
-    def __init__(self, model, times, nPaths, seed=123, timeInterpolation=True):
-        print('Start MC Simulation:', end='', flush=True)
+    def __init__(self, model, times, nPaths, seed=123, timeInterpolation=True, showProgress=True):
+        if showProgress: print('Start MC Simulation:', end='', flush=True)
         self.model  = model   # an object implementing stochastic process interface
         self.times  = times   # simulation times [0, ..., T], np.array
         self.nPaths = nPaths  # number of paths, long
+        self.seed   = seed    # the random seed
         self.timeInterpolation = timeInterpolation  # allow state calculation in between simulated states
         # random number generator
-        print(' |dW\'s', end='', flush=True)
-        rg = np.random.Generator(np.random.PCG64(seed))
-        self.dW = rg.standard_normal([self.nPaths,len(self.times)-1,model.factors()])        
-        print('|', end='', flush=True)
+        if showProgress: print(' |dW\'s', end='', flush=True)
+        rg = np.random.Generator(np.random.PCG64(self.seed))
+        self.dW = rg.standard_normal([self.nPaths,len(self.times)-1,model.factors()])
+        if showProgress: print('|', end='', flush=True)
         # simulate states
         self.X = np.zeros([self.nPaths,len(self.times),model.size()])
         for i in range(self.nPaths):
-            if i % max(int(self.nPaths/10),1) == 0 : print('s', end='', flush=True)
+            if showProgress and i % max(int(self.nPaths/10),1) == 0 : print('s', end='', flush=True)
             self.X[i,0] = self.model.initialValues()
             for j in range(len(self.times)-1):
                 model.evolve(self.times[j],self.X[i,j],times[j+1]-times[j],self.dW[i,j],self.X[i,j+1])
-        print('| Finished.', end='\n', flush=True)
+        if showProgress: print('| Finished.', end='\n', flush=True)
 
     def state(self, idx, t):
         if not idx<self.nPaths:
