@@ -9,8 +9,6 @@ import numpy as np
 from hybmc.termstructures.YieldCurve import YieldCurve
 from hybmc.models.QuasiGaussianModel import QuasiGaussianModel
 
-import QuantLib as ql
-
 class TestQuasiGaussianModel(unittest.TestCase):
 
     # set up the stage for testing the models
@@ -214,7 +212,7 @@ class TestQuasiGaussianModel(unittest.TestCase):
 
     def test_Evolve(self):
         # we set up a test case via QuantLib
-        ytsH = ql.YieldTermStructureHandle(ql.FlatForward(0,ql.NullCalendar(),0.03,ql.Actual365Fixed()))
+        zeroRate = 0.03
         d     = 3
         times = np.array([  10.0     ])
         sigma = np.array([ [ 0.0060 ],
@@ -231,36 +229,47 @@ class TestQuasiGaussianModel(unittest.TestCase):
         Gamma = np.array([ [1.0, 0.8, 0.6],
                            [0.8, 1.0, 0.8],
                            [0.6, 0.8, 1.0] ])
-        #
-        qg = ql.QuasiGaussianModel(ytsH,d,times,sigma,slope,curve,[ 0.0 ],delta,chi,Gamma,0.1)
-        mc = ql.RealMcSimulation(qg,[0.0, 5.0, 10.0],[0.0, 5.0, 10.0],1,1234,False,False,True)
-        mc.simulate()
-        dW = np.array(mc.brownian(0))
-        dW = dW[:,:3]
-        #print(dW)
-        X = np.array(mc.observedPath(0))
-        Xref = np.delete(X,12,1)
-        #print(Xref)
-        # we save QL results in case we don't have QL available
-        # dW = np.array([
-        #     [-0.8723107, -0.00585635, 0.31102388],
-        #     [-0.15673275, 0.28482762, 0.79041947]])
-        # Xref = np.array([
-        #     [ 0.        , 0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ],
-        #     [-0.02182255, 0.0397456 , -0.01717905,  0.0006412 , -0.00116167,  0.00059747, -0.00116167,  0.00259077, -0.00141925,  0.00059747, -0.00141925,  0.00088815,  0.00185998],
-        #     [-0.02476015, 0.04705765, -0.0083194 ,  0.00127306, -0.00232704,  0.00102049, -0.00232704,  0.00518216, -0.00243878,  0.00102049, -0.00243878,  0.00133699,  0.03866521]])        
+        # try QuantLib
+        try:
+            import QuantLib as ql
+            ytsH = ql.YieldTermStructureHandle(ql.FlatForward(0,ql.NullCalendar(),zeroRate,ql.Actual365Fixed()))
+            qg = ql.QuasiGaussianModel(ytsH,d,times,sigma,slope,curve,[ 0.0 ],delta,chi,Gamma,0.1)
+            mc = ql.RealMCSimulation(qg,[0.0, 5.0, 10.0],[0.0, 5.0, 10.0],1,1234,False,False,True)
+            mc.simulate()
+            dW = np.array(mc.brownian(0))
+            dW = dW[:,:3]
+            #print(dW)
+            X = np.array(mc.observedPath(0))
+            Xref = np.delete(X,12,1)
+            #print(Xref)
+            qlzcb = ql.RealMCZeroBond(5.0,10.0,'')
+            zcbRef = ql.RealMCPayoffPricer_at(qlzcb,mc)[0]
+            #
+            atol = 1.0e-14
+            equalPlaces = 15
+        except:
+            # we save QL results in case we don't have QL available
+            ytsH = YieldCurve(zeroRate)
+            dW = np.array([
+                [-0.8723107, -0.00585635, 0.31102388],
+                [-0.15673275, 0.28482762, 0.79041947]])
+            Xref = np.array([
+                [ 0.        , 0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ,  0.        ],
+                [-0.02182255, 0.0397456 , -0.01717905,  0.0006412 , -0.00116167,  0.00059747, -0.00116167,  0.00259077, -0.00141925,  0.00059747, -0.00141925,  0.00088815,  0.00185998],
+                [-0.02476015, 0.04705765, -0.0083194 ,  0.00127306, -0.00232704,  0.00102049, -0.00232704,  0.00518216, -0.00243878,  0.00102049, -0.00243878,  0.00133699,  0.03866521]])
+            #
+            zcbRef = 0.851676232405887
+            #
+            atol = 1.0e-8
+            equalPlaces = 9
         #
         model = QuasiGaussianModel(ytsH,d,times,sigma,slope,curve,delta,chi,Gamma)
         X = np.zeros([3,13])
         model.evolve(0.0,X[0],5.0,dW[0],X[1])
         model.evolve(5.0,X[1],5.0,dW[1],X[2])
-        self.assertTrue(np.allclose(X,Xref,rtol=0.0,atol=1.0e-14))
-        # test zero coupon bond (again)
-        qlzcb = ql.RealMCZeroBond(5.0,10.0,'')
-        zcbRef = ql.RealMCPayoffPricer_at(qlzcb,mc)[0]
-        # zcbRef = 0.851676232405887
+        self.assertTrue(np.allclose(X,Xref,rtol=0.0,atol=atol))
         zcb = model.zeroBond(5.0,10.0,X[1],None)
-        self.assertAlmostEqual(zcb,zcbRef,15)
+        self.assertAlmostEqual(zcb,zcbRef,equalPlaces)
 
 
 
