@@ -10,7 +10,7 @@ import sys
 sys.path.append('./')
 
 from hybmc.simulations.McSimulation import McSimulation
-from hybmc.models.JuliaModel import JuliaModel
+from hybmc.wrappers.JuliaModel import JuliaModel
 
 
 def JuliaSimulation(sim, simulate=False, useBrownians=False, times=None, nPaths=None, seed=None, timeInterpolation=None):

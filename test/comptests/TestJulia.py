@@ -16,8 +16,8 @@ from hybmc.models.QuasiGaussianModel import QuasiGaussianModel
 from hybmc.simulations.McSimulation import McSimulation
 from hybmc.products.Swap import Swap
 
-from hybmc.simulations.JuliaPayoff import JuliaPayoff, JuliaPayoffs
-from hybmc.simulations.JuliaSimulation import JuliaSimulation, JuliaDiscountedAt
+from hybmc.wrappers.JuliaPayoff import JuliaPayoff, JuliaPayoffs
+from hybmc.wrappers.JuliaSimulation import JuliaSimulation, JuliaDiscountedAt
 
 class TestJulia(unittest.TestCase):
 
