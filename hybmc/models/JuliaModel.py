@@ -3,9 +3,9 @@
 # create Julia models from Python models
 
 from julia import Main
-Main.include('./hybmc/termstructures/YieldCurve.jl')
-Main.include('./hybmc/models/HullWhitemodel.jl')
-Main.include('./hybmc/models/QuasiGaussianModel.jl')
+Main.include('hybmc/termstructures/YieldCurve.jl')
+Main.include('hybmc/models/HullWhitemodel.jl')
+Main.include('hybmc/models/QuasiGaussianModel.jl')
 
 import sys
 sys.path.append('./')

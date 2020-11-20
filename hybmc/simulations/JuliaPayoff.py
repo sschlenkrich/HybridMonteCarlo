@@ -3,7 +3,7 @@
 # create Julia payoffs from Python payoffs
 
 from julia import Main
-Main.include('./hybmc/simulations/Payoffs.jl')
+Main.include('hybmc/simulations/Payoffs.jl')
 
 import sys
 sys.path.append('./')

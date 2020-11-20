@@ -3,8 +3,8 @@
 # create Julia simulation from Python McSimulation
 
 from julia import Main
-Main.include('./hybmc/simulations/Payoffs.jl')
-Main.include('./hybmc/simulations/McSimulation.jl')
+Main.include('hybmc/simulations/Payoffs.jl')
+Main.include('hybmc/simulations/McSimulation.jl')
 
 import sys
 sys.path.append('./')
