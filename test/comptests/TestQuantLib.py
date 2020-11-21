@@ -22,7 +22,7 @@ from hybmc.products.Swap import Swap
 from hybmc.wrappers.QuantLibPayoffs import QuantLibPayoff, QuantLibPayoffs
 from hybmc.wrappers.QuantLibSimulation import QuantLibSimulation, QuantLibDiscountedAt
 
-class TestJulia(unittest.TestCase):
+class TestQuantLib(unittest.TestCase):
 
     def setUp(self):
         today     = ql.Date(5,ql.October,2020)
@@ -77,7 +77,7 @@ class TestJulia(unittest.TestCase):
         nPaths = 2**7
         seed = 314159
         timeInterpolation = True
-        sim = McSimulation(model,simTimes,nPaths,seed,timeInterpolation)
+        sim = McSimulation(model,simTimes,nPaths,seed,timeInterpolation,False)
         #
         qSim = QuantLibSimulation(sim)                                   # just copy
         #
@@ -96,7 +96,7 @@ class TestJulia(unittest.TestCase):
         nPaths = 2**7
         seed = 3141592
         timeInterpolation = True
-        sim = McSimulation(model,simTimes,nPaths,seed,timeInterpolation)
+        sim = McSimulation(model,simTimes,nPaths,seed,timeInterpolation,False)
         qSim = QuantLibSimulation(sim) 
         #
         payoffs = self.timeline[0.0]

@@ -74,7 +74,7 @@ class TestJulia(unittest.TestCase):
         nPaths = 2**7
         seed = 314159265359
         timeInterpolation = True
-        sim = McSimulation(model,simTimes,nPaths,seed,timeInterpolation)
+        sim = McSimulation(model,simTimes,nPaths,seed,timeInterpolation,False)
         #
         jSim = JuliaSimulation(sim)                                   # just copy
         self.assertEqual(np.max(np.abs(sim.X-jSim.X)), 0.0)
@@ -99,7 +99,7 @@ class TestJulia(unittest.TestCase):
         nPaths = 2**7
         seed = 314159265359
         timeInterpolation = True
-        sim = McSimulation(model,simTimes,nPaths,seed,timeInterpolation)
+        sim = McSimulation(model,simTimes,nPaths,seed,timeInterpolation,False)
         jSim = JuliaSimulation(sim,simulate=True,useBrownians=True)   # only evolve
         #
         payoffs = self.timeline[0.0]
