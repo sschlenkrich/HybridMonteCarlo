@@ -102,6 +102,7 @@ class TestPayoffScripting(unittest.TestCase):
         discounts1 = np.array([ curve.discount(t+dT0+dT1) for t in liborTimes ])
         liborsCv = (discounts0/discounts1 - 1.0)/dT1
         liborsMC = cfPVs / discounts1
+        print('')
         print('  T     LiborRate  ModelLibor')
         for k,t in enumerate(liborTimes):
             print(' %4.1f   %6.4lf     %6.4lf' % (t, liborsCv[k], liborsMC[k]) )
@@ -111,9 +112,14 @@ class TestPayoffScripting(unittest.TestCase):
         a = 1.0
         b = 1.0
         x = ~(Fixed(1.0) + 0.5)
-        print(x.at(a))
-        print(x.at(b))
-
+        #print(x.at(a))
+        #print(x.at(b))
+        self.assertEqual(x._lastPath,None)
+        x.at(a)
+        self.assertEqual(x._lastPath,a)
+        x.at(b)
+        self.assertEqual(x._lastPath,b)
+        
 
 if __name__ == '__main__':
     unittest.main()

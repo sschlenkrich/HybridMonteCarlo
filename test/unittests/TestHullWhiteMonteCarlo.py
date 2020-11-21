@@ -28,19 +28,20 @@ class TestHullWhiteMonteCarlo(unittest.TestCase):
         nPaths = 2**11
         seed = 1234
         # risk-neutral simulation
-        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed)
+        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed,showProgress=False)
         discZeroBonds = np.array([
             [ 1.0 / self.modelRiskNeutral.numeraire(t,x) for t,x in zip(times,path) ]
             for path in mcSim.X ])
         mcZeroBondsRiskNeutral = np.average(discZeroBonds,axis=0)
         # discrete forward measure simulation
-        mcSim = McSimulation(self.modelDiscreteFwd,times,nPaths,seed)
+        mcSim = McSimulation(self.modelDiscreteFwd,times,nPaths,seed,showProgress=False)
         discZeroBonds = np.array([
             [ 1.0 / self.modelDiscreteFwd.numeraire(t,x) for t,x in zip(times,path) ]
             for path in mcSim.X ])
         mcZeroBondsDiscreteFwd = np.average(discZeroBonds,axis=0)
         # curve
         zeroBonds = np.array([ self.curve.discount(t) for t in times ])
+        print('')
         print('  T     ZeroRate  RiskNeutral  DiscreteFwd')
         for k, t in enumerate(times[1:]):
             zeroRate    = -np.log(zeroBonds[k+1])/t
@@ -54,7 +55,7 @@ class TestHullWhiteMonteCarlo(unittest.TestCase):
         times = np.array([0.0, 2.0, 5.0, 10.0])
         nPaths = 2
         seed = 1234
-        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed,False)
+        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed,False,showProgress=False)
         # test exact values
         for k, t in enumerate(times):
             self.assertListEqual(list(mcSim.state(0,t)),list(mcSim.X[0][k]))
@@ -72,7 +73,7 @@ class TestHullWhiteMonteCarlo(unittest.TestCase):
         times = np.array([0.0, 2.0, 5.0, 10.0])
         nPaths = 2
         seed = 1234
-        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed,True)
+        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed,True,showProgress=False)
         idx = 0
         dT  = 5.7
         path = mcSim.path(idx)
@@ -93,7 +94,7 @@ class TestHullWhiteMonteCarlo(unittest.TestCase):
         nPaths = 2**11
         seed = 1234
         # risk-neutral simulation
-        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed)
+        mcSim = McSimulation(self.modelRiskNeutral,times,nPaths,seed,showProgress=False)
         #
         cfPVs = np.array([
             [ p.discountedAt(mcSim.path(idx)) for p in cfs ] for idx in range(nPaths) ])
@@ -102,6 +103,7 @@ class TestHullWhiteMonteCarlo(unittest.TestCase):
         discounts1 = np.array([ mcSim.model.yieldCurve.discount(t+dT0+dT1) for t in liborTimes ])
         liborsCv = (discounts0/discounts1 - 1.0)/dT1
         liborsMC = cfPVs / discounts1
+        print('')
         print('  T     LiborRate  MnteCarlo')
         for k,t in enumerate(liborTimes):
             print(' %4.1f   %6.4lf     %6.4lf' % (t, liborsCv[k], liborsMC[k]) )
