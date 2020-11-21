@@ -61,6 +61,7 @@ class TestSwapProduct(unittest.TestCase):
         #swap.cashFlows(8.1)
         timeLine = swap.timeLine([1.0, 2.0, 3.0])
         #
+        print('')
         for t in timeLine:
             print('ObsTime: %.2f' % t)
             for p in timeLine[t]:
@@ -72,6 +73,7 @@ class TestSwapProduct(unittest.TestCase):
         obsTimes = np.linspace(0.0,10.0,121)
         nPaths = 2**7
         seed = 314159265359
+        print('')
         mcSim = McSimulation(model,obsTimes,nPaths,seed,True)
         swap = Swap(self.legs,self.pors,self.discYtsH)
         scen = swap.scenarios(obsTimes,mcSim)
@@ -84,6 +86,7 @@ class TestSwapProduct(unittest.TestCase):
         obsTimes = np.array([0.0])
         nPaths = 1
         seed = 1
+        print('')
         mcSim = McSimulation(model,obsTimes,nPaths,seed,True)
         swap = AmcSwap(self.legs,self.pors,mcSim,2,self.discYtsH)
         #swap.cashFlows(8.1)
@@ -99,6 +102,7 @@ class TestSwapProduct(unittest.TestCase):
         model = HWModel()
         obsTimes = np.linspace(0.0,10.0,121)
         nPaths = 2**7
+        print('')
         # calibration
         seed0 = 314159265359
         mcSim0 = McSimulation(model,obsTimes,nPaths,seed0,True)
@@ -116,6 +120,7 @@ class TestSwapProduct(unittest.TestCase):
         model = HWModel()
         obsTimes = np.linspace(0.0,10.0,121)
         nPaths = 2**7
+        print('')
         # calibration
         seed0 = 314159265359
         mcSim0 = McSimulation(model,obsTimes,nPaths,seed0,True)
@@ -140,6 +145,7 @@ class TestSwapProduct(unittest.TestCase):
         swap = Swap(self.legs,self.pors,discYtsHs=None,currencyAliases='EUR')
         timeLine = swap.timeLine([8.0])
         #
+        print('')
         for t in timeLine:
             print('ObsTime: %.2f' % t)
             for p in timeLine[t]:
@@ -149,6 +155,7 @@ class TestSwapProduct(unittest.TestCase):
         swap = Swap(self.legs,self.pors,discYtsHs=None,currencyAliases=['EUR','USD'])
         timeLine = swap.timeLine([8.0])
         #
+        print('')
         for t in timeLine:
             print('ObsTime: %.2f' % t)
             for p in timeLine[t]:
@@ -170,6 +177,7 @@ class TestSwapProduct(unittest.TestCase):
         obsTimes = np.array([0.0, 0.5, 1.1])
         timeLine = swap.timeLine(obsTimes)
         #
+        print('')
         for t in timeLine:
             print('ObsTime: %.2f' % t)
             for p in timeLine[t]:

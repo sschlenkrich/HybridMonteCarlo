@@ -85,6 +85,7 @@ class TestHybridModel(unittest.TestCase):
         nPaths = 2**13
         seed = 314159265359
         # risk-neutral simulation
+        print('')
         mcSim = McSimulation(self.model,times,nPaths,seed,False)
         # 
         T = 10.0
@@ -180,6 +181,7 @@ class TestHybridModel(unittest.TestCase):
         nPaths = 2**13
         seed = 314159265359
         # risk-neutral simulation
+        print('')
         mcSim = McSimulation(model,times,nPaths,seed,False)
         # 
         T = 10.0

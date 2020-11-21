@@ -46,7 +46,7 @@ class TestCreditModel(unittest.TestCase):
         nPaths = 1
         seed = 314159265359
         # risk-neutral simulation
-        mcSim = McSimulation(model,times,nPaths,seed,False)
+        mcSim = McSimulation(model,times,nPaths,seed,False,False)
         p = mcSim.path(0)
         #
         self.assertEqual(p.zeroBond(0.0, 10.0, None), baseModel.yieldCurve.discount(10.0) )
@@ -88,13 +88,13 @@ class TestCreditModel(unittest.TestCase):
         corr[1,3] = -0.85  # credit-FX
         corr[3,1] = -0.85
         creditModel = CreditModel(hybModel,['CP'],[spreadModel],corr)
-        print(creditModel.factorAliases())
+        # print(creditModel.factorAliases())
         #
         obsTimes = np.linspace(0.0,10.0,3)
         nPaths = 2
         seed = 314159265359
-        mcSim = McSimulation(creditModel,obsTimes,nPaths,seed,True)
-        print(mcSim.X)
+        mcSim = McSimulation(creditModel,obsTimes,nPaths,seed,True,False)
+        # print(mcSim.X)
 
 
 if __name__ == '__main__':

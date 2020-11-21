@@ -30,11 +30,11 @@ class TestAmcPayoffs(unittest.TestCase):
         # regression
         nPaths = 2**7
         seed = 314159265359
-        self.mcSim0 = McSimulation(self.model,times,nPaths,seed,False)
+        self.mcSim0 = McSimulation(self.model,times,nPaths,seed,False,False)
         # valuation
         nPaths = 2**7
         seed = 141592653593
-        self.mcSim1 = McSimulation(self.model,times,nPaths,seed,False)
+        self.mcSim1 = McSimulation(self.model,times,nPaths,seed,False,False)
 
 
     def test_AmcRegression(self):

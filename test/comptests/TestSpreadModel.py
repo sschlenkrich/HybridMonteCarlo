@@ -45,6 +45,7 @@ class TestSpreadModel(unittest.TestCase):
 
     def test_SpreadModelSetup(self):
         # we check against known values
+        print('')
         print(self.model.stateAliases())
         print(self.model.factorAliases())
 
@@ -53,6 +54,7 @@ class TestSpreadModel(unittest.TestCase):
         nPaths = 2**10
         seed = 1234
         # risk-neutral simulation
+        print('')
         mcSim = McSimulation(self.model,times,nPaths,seed,False)
         # 
         T = 10.0
