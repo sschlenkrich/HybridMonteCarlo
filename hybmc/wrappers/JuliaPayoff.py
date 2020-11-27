@@ -21,10 +21,16 @@ def JuliaPayoff(p):
         return Main.Fixed(p.x)
     #
     if isinstance(p,ZeroBond):
-        return Main.ZeroBond(p.obsTime,p.payTime,p.alias)
+        alias = p.alias
+        if p.alias is None:
+            alias = ''
+        return Main.ZeroBond(p.obsTime,p.payTime,alias)
     #
     if isinstance(p,LiborRate):
-        return Main.LiborRate(p.obsTime,p.startTime,p.endTime,p.yearFraction,p.tenorBasis,p.alias,False)
+        alias = p.alias
+        if p.alias is None:
+            alias = ''
+        return Main.LiborRate(p.obsTime,p.startTime,p.endTime,p.yearFraction,p.tenorBasis,alias,False)
     #
     if isinstance(p,Asset):
         return Main.Asset(p.obsTime,p.alias)

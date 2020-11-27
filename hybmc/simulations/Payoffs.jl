@@ -86,8 +86,8 @@ import Base.>
 
 # basic payoffs
 
-struct Fixed <: Leaf
-    x
+struct Fixed{T<:AbstractFloat} <: Leaf
+    x::T
 end
 
 at(self::Fixed, p::Path) = self.x
@@ -95,9 +95,9 @@ obsTime(self::Fixed) = 0.0
 
 #
 
-struct Pay <: Payoff
+struct Pay{T<:AbstractFloat} <: Payoff
     x::Payoff
-    payTime
+    payTime::T
 end
 
 at(self::Pay, p::Path) = at(self.x, p)
@@ -108,9 +108,9 @@ end
 
 #
 
-struct Asset <: Leaf
-    obsTime
-    alias
+struct Asset{T<:AbstractFloat} <: Leaf
+    obsTime::T
+    alias::String
 end
 
 Asset(obsTime) = Asset(obsTime,nothing)
@@ -121,31 +121,34 @@ obsTime(self::Asset) = self.obsTime
 
 # basic rates payoffs
 
-struct ZeroBond <: Leaf
-    obsTime
-    payTime
-    alias
+struct ZeroBond{T<:AbstractFloat} <: Leaf
+    obsTime::T
+    payTime::T
+    alias::String
 end
 
-ZeroBond(obsTime,payTime) = ZeroBond(obsTime,payTime,nothing)
+ZeroBond(obsTime,payTime) = ZeroBond(obsTime,payTime,"")
 at(self::ZeroBond, p::Path) = zeroBond(p,self.obsTime,self.payTime,self.alias)
 obsTime(self::ZeroBond) = self.obsTime
 
 #
 
-struct LiborRate <: Leaf
-    obsTime
-    startTime
-    endTime
-    yearFraction
-    tenorBasis
-    alias
+struct LiborRate{T<:AbstractFloat} <: Leaf
+    obsTime::T
+    startTime::T
+    endTime::T
+    yearFraction::T
+    tenorBasis::T
+    alias::String
     _dummy_::Bool  # avoid stack overflow during constructor
 end
 
 function LiborRate(obsTime,startTime,endTime;yearFraction=nothing,tenorBasis=1.0,alias=nothing)
     if isnothing(yearFraction)
         yearFraction = endTime - startTime
+    end
+    if isnothing(alias)
+        alias = ""
     end
     return LiborRate(obsTime,startTime,endTime,yearFraction,tenorBasis,alias,true)
 end
@@ -159,17 +162,17 @@ obsTime(self::LiborRate) = self.obsTime
 
 #
 
-struct SwapRate <: Leaf
-    obsTime
-    floatTimes
-    floatWeights
-    fixedTimes
-    fixedWeights
-    alias
+struct SwapRate{T<:AbstractFloat} <: Leaf
+    obsTime::T
+    floatTimes::T
+    floatWeights::T
+    fixedTimes::T
+    fixedWeights::T
+    alias::String
 end
 
 SwapRate(obsTime,floatTimes,floatWeights,fixedTimes,fixedWeights) =
-    SwapRate(obsTime,floatTimes,floatWeights,fixedTimes,fixedWeights,nothing)
+    SwapRate(obsTime,floatTimes,floatWeights,fixedTimes,fixedWeights,"")
 function at(self::SwapRate, p::Path)
     num = sum([ w*zeroBond(p,self.obsTime,T,self.alias) for (w,T) in zip(self.floatWeights,self.floatTimes) ])
     den = sum([ w*zeroBond(p,self.obsTime,T,self.alias) for (w,T) in zip(self.fixedWeights,self.fixedTimes) ])
@@ -179,14 +182,14 @@ obsTime(self::SwapRate) = self.obsTime
 
 #
 
-struct FixedLeg <: Leaf
-    obsTime
-    payTimes
-    payWeights
-    alias
+struct FixedLeg{T<:AbstractFloat} <: Leaf
+    obsTime::T
+    payTimes::T
+    payWeights::T
+    alias::String
 end
 
-FixedLeg(obsTime,payTime,payWeights) = FixedLeg(obsTime,payTime,payWeights,nothing)
+FixedLeg(obsTime,payTime,payWeights) = FixedLeg(obsTime,payTime,payWeights,"")
 function at(self::FixedLeg, p::Path)
     return sum([ w*zeroBond(p,self.obsTime,T,self.alias) for (w,T) in zip(self.payWeights,self.payTimes) ])
 end
@@ -194,8 +197,8 @@ obsTime(self::FixedLeg) = self.obsTime
 
 # arithmetic operations
 
-struct Axpy <: BinaryNode
-    a
+struct Axpy{T<:AbstractFloat} <: BinaryNode
+    a::T
     x::Payoff
     y::Payoff
 end
@@ -240,7 +243,7 @@ struct Min <: BinaryNode
     y::Payoff
 end
 
-at(self::Min, p::Path) = max(at(self.x,p),at(self.y,p))
+at(self::Min, p::Path) = min(at(self.x,p),at(self.y,p))
 obsTime(self::Div) = 0.0
 
 #
