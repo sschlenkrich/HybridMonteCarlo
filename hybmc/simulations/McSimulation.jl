@@ -3,14 +3,14 @@ include("../models/StochasticProcess.jl")
 
 using Random, Distributions
 
-struct McSimulation
+struct McSimulation{T<:AbstractFloat}
     model::StochasticProcess
-    times
-    nPaths
-    seed
-    timeInterpolation
-    dW
-    X
+    times::Array{T}
+    nPaths::Int64
+    seed::Int64
+    timeInterpolation::Bool
+    dW::Array{T}
+    X::Array{T}
 end
 
 function McSimulation(model,times,nPaths,seed=123,timeInterpolation=true)
@@ -29,7 +29,7 @@ end
 
 function McSimulationWithBrownians(model,times, dW, timeInterpolation=true)
     nPaths = size(dW)[1]
-    seed = nothing
+    seed = 0  #  this should better be nothing but we must provide Int64
     X = zeros((nPaths,size(times)[1],stateSize(model)))
     @views for i = 1:nPaths
         X[i,1,:] = initialValues(model)
@@ -62,7 +62,7 @@ end
 
 struct Path
     simulation::McSimulation
-    idx
+    idx::Int64
 end
 
 function paths(self::McSimulation)

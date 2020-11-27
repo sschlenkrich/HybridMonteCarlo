@@ -2,22 +2,23 @@
 using LinearAlgebra
 
 include("../models/StochasticProcess.jl")
+include("../termstructures/YieldCurve.jl")
 
 # the actual data structure for the model
-struct QuasiGaussianModel <: StochasticProcess
-    yieldCurve  # initial yield term structure 
-    d           # specify d-dimensional Brownian motion for x(t)
-                # we do not use stoch vol z(t) for now
-    times       # time-grid of left-constant model parameter values
-    sigma       # volatility
-    slope       # skew
-    curve       # smile
-    delta       # maturity of benchmark rates f(t,t+delta_i)
-    chi         # mean reversion
-    Gamma       # (benchmark rate) correlation matrix
+struct QuasiGaussianModel{T<:AbstractFloat} <: StochasticProcess
+    yieldCurve::YieldCurve   # initial yield term structure 
+    d::Int64                 # specify d-dimensional Brownian motion for x(t)
+                             # we do not use stoch vol z(t) for now
+    times::Array{T}          # time-grid of left-constant model parameter values
+    sigma::Array{T}          # volatility
+    slope::Array{T}          # skew
+    curve::Array{T}          # smile
+    delta::Array{T}          # maturity of benchmark rates f(t,t+delta_i)
+    chi::Array{T}            # mean reversion
+    Gamma::Array{T,2}        # (benchmark rate) correlation matrix
     # additional model parameters
-    DfT
-    HHfInv
+    DfT::LowerTriangular{Float64,Array{Float64,2}}
+    HHfInv::Array{T,2}
 end
 
 # constructor

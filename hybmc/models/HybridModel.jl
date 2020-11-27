@@ -1,23 +1,24 @@
 
 include("../models/StochasticProcess.jl")
+include("../models/AssetModel.jl")
 
 using LinearAlgebra, Interpolations
 
-struct HybridModel <: StochasticProcess
-    domAlias         #  name of our domestic (numeraire) currency
-    domRatesModel    #  domestic rates model specifies numeraire
-    forAliases       #  list of foreign currencies (all relative to dom currency)
-    forAssetModels   #  list of foreign asset models
-    forRatesModels   #  list of foreign rates models
-    correlations     #  2d array of instantanous correlations
+struct HybridModel{T<:AbstractFloat,D<:StochasticProcess,A<:AssetModel,F<:StochasticProcess} <: StochasticProcess
+    domAlias::String                          #  name of our domestic (numeraire) currency
+    domRatesModel::D                          #  domestic rates model specifies numeraire
+    forAliases::Array{String}                 #  list of foreign currencies (all relative to dom currency)
+    forAssetModels::Array{A}                  #  list of foreign asset models
+    forRatesModels::Array{F}                  #  list of foreign rates models
+    correlations::Array{T,2}                  #  2d array of instantanous correlations
     # additional data
-    index            # a dictionary from foreign alias to index
-    _size            # sum of model states
-    _factors         # sum of model _factors
-    modelsStartIdx   # were do foreign models start in X
-    L                # L L^T = correlations
-    hybAdjTimes      # array of reference times for adjuster
-    hybVolAdj        # array of the additive volatility adjuster
+    index::Dict{String,Int64}                 # a dictionary from foreign alias to index
+    _size::Int64                              # sum of model states
+    _factors::Int64                           # sum of model _factors
+    modelsStartIdx::Array{Int64}              # were do foreign models start in X
+    L::LowerTriangular{Float64,Array{Float64,2}}   # L L^T = correlations
+    hybAdjTimes::Array{T}                    # array of reference times for adjuster
+    hybVolAdj::Array{T}                      # array of the additive volatility adjuster
 end
 
 # constructor
@@ -44,8 +45,8 @@ function HybridModel(domAlias, domRatesModel,
     else
         L = nothing
     end
-    hybAdjTimes = nothing
-    hybVolAdj = nothing
+    hybAdjTimes = zeros(0)
+    hybVolAdj = zeros(0)
     return HybridModel(domAlias,domRatesModel,forAliases,forAssetModels,forRatesModels,
         correlations,index,_size,_factors,modelsStartIdx,L,hybAdjTimes,hybVolAdj)
 end
@@ -179,7 +180,7 @@ end
 # adjuster methodology for stochastic rates and FX volatility
 
 function hybridVolAdjuster(self::HybridModel, forIdx, t)
-    if isnothing(self.hybAdjTimes)
+    if size(self.hybAdjTimes)==(0,)
         return 0.0  # default
     end
     # linear interpolation with constant extrapolation

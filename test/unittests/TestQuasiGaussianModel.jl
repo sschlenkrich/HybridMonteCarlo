@@ -5,7 +5,7 @@ include("../../hybmc/termstructures/YieldCurve.jl")
 include("../../hybmc/models/QuasiGaussianModel.jl")
 
 function setUp()
-    curve = YieldCurve(0.03)
+    yc = YieldCurve(0.03)
     d     = 3
 
     times = [ 1.0,    2.0,    5.0,    10.0     ]
@@ -30,7 +30,7 @@ function setUp()
               0.6  0.8  1.0 ]
 
     # test matricies
-    return QuasiGaussianModel(curve,d,times,sigma,slope,curve,delta,chi,Gamma)
+    return QuasiGaussianModel(yc,d,times,sigma,slope,curve,delta,chi,Gamma)
 end
 
 

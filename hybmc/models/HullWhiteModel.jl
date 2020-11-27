@@ -1,16 +1,17 @@
 include("../mathutils/Helpers.jl")
+include("../termstructures/YieldCurve.jl")
 include("../models/StochasticProcess.jl")
 
 
 using Roots
 
 # the actual data structure for the model
-struct HullWhiteModel <: StochasticProcess
-    yieldCurve
-    meanReversion
-    volatilityTimes::Array
-    volatilityValues::Array
-    y_
+struct HullWhiteModel{T<:AbstractFloat} <: StochasticProcess
+    yieldCurve::YieldCurve
+    meanReversion::T
+    volatilityTimes::Array{T}
+    volatilityValues::Array{T}
+    y_::Array{T}
 end
 
 # constructor
