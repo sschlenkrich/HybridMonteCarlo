@@ -66,7 +66,7 @@ end
     # risk-neutral simulation
     mcSim = McSimulation(model,times,nPaths,seed)
     discZeroBonds = [
-        (1.0 / numeraire(model,times[i],mcSim.X[j,i,:]))
+        (1.0 / numeraire(model,times[i],mcSim.X[:,i,j]))
         for i = 1:size(times)[1], j = 1:nPaths ]    
     mcZeroBondsRiskNeutral = mean(discZeroBonds, dims=2)
     zeroBonds = [ discount(model.yieldCurve,t) for t in times ]

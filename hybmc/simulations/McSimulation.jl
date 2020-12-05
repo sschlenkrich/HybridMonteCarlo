@@ -17,24 +17,26 @@ function McSimulation(model,times,nPaths,seed=123,timeInterpolation=true)
     Random.seed!(seed) # Setting the seed
     norm = Normal()
     dW = rand( norm, (nPaths,size(times)[1]-1,factors(model)) )
-    X = zeros((nPaths,size(times)[1],stateSize(model)))
+    dW = permutedims(dW, [3, 2, 1])  # we do not want to break unit tests
+    X = zeros((stateSize(model), size(times)[1], nPaths))
     @views for i = 1:nPaths
-        X[i,1,:] = initialValues(model)
+        X[:,1,i] = initialValues(model)
         for j = 1:size(times)[1]-1
-            evolve(model,times[j],X[i,j,:],times[j+1]-times[j],dW[i,j,:],X[i,j+1,:])
+            evolve(model,times[j],X[:,j,i],times[j+1]-times[j],dW[:,j,i],X[:,j+1,i])
         end
     end
     return McSimulation(model,times,nPaths,seed,timeInterpolation,dW,X)
 end
 
 function McSimulationWithBrownians(model,times, dW, timeInterpolation=true)
-    nPaths = size(dW)[1]
+    nPaths = size(dW)[3]  # dW = (factors,times,paths)
     seed = 0  #  this should better be nothing but we must provide Int64
-    X = zeros((nPaths,size(times)[1],stateSize(model)))
+    # X = zeros((nPaths,size(times)[1],stateSize(model)))
+    X = zeros((stateSize(model), size(times)[1], nPaths))
     @views for i = 1:nPaths
-        X[i,1,:] = initialValues(model)
+        X[:,1,i] = initialValues(model)
         for j = 1:size(times)[1]-1
-            evolve(model,times[j],X[i,j,:],times[j+1]-times[j],dW[i,j,:],X[i,j+1,:])
+            evolve(model,times[j],X[:,j,i],times[j+1]-times[j],dW[:,j,i],X[:,j+1,i])
         end
     end
     return McSimulation(model,times,nPaths,seed,timeInterpolation,dW,X)
@@ -47,17 +49,17 @@ function state(self::McSimulation, idx, t)
     tIdx = searchsortedfirst(self.times,t)
     tIdx = min(tIdx,size(self.times)[1])  # use the last element
     if abs(self.times[tIdx]-t)<0.5/365  # we give some tolerance of half a day
-        return @view self.X[idx,tIdx,:]
+        return @view self.X[:,tIdx,idx]
     end
     if !self.timeInterpolation
         throw(ArgumentError("timeInterpolation required for input time."))
     end
     if t >= self.times[tIdx] || tIdx==0  # extrapolation
-        return self.X[idx,tIdx,:]
+        return self.X[:,tIdx,idx]
     end
     # linear interpolation
     rho = (self.times[tIdx] - t) / (self.times[tIdx] - self.times[tIdx-1])
-    return rho * self.X[idx,tIdx-1,:] + (1.0-rho) * self.X[idx,tIdx,:]  # better use view?
+    return rho * self.X[:,tIdx-1,idx] + (1.0-rho) * self.X[:,tIdx,idx]  # better use view?
 end
 
 struct Path

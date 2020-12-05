@@ -77,11 +77,11 @@ class TestJulia(unittest.TestCase):
         sim = McSimulation(model,simTimes,nPaths,seed,timeInterpolation,False)
         #
         jSim = JuliaSimulation(sim)                                   # just copy
-        self.assertEqual(np.max(np.abs(sim.X-jSim.X)), 0.0)
+        self.assertEqual(np.max(np.abs(sim.X-jSim.X.transpose(2,1,0))), 0.0)
         jSim = JuliaSimulation(sim,simulate=True,useBrownians=True)   # only evolve
-        self.assertLess(np.max(np.abs(sim.X-jSim.X)), 1.0e-15)
+        self.assertLess(np.max(np.abs(sim.X-jSim.X.transpose(2,1,0))), 1.0e-15)
         jSim = JuliaSimulation(sim,simulate=True,useBrownians=False)  # simulate with new Brownians
-        self.assertGreater(np.max(np.abs(sim.X-jSim.X)), 0.29)        # should not be close
+        self.assertGreater(np.max(np.abs(sim.X-jSim.X.transpose(2,1,0))), 0.29)        # should not be close
         #
         simTimes = np.array([0.0, 1.0, 2.0])
         nPaths = 2

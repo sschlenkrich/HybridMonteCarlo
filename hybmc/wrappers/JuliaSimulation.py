@@ -25,11 +25,13 @@ def JuliaSimulation(sim, simulate=False, useBrownians=False, times=None, nPaths=
     #
     if simulate:
         if useBrownians:
-            return Main.McSimulationWithBrownians(model,times,sim.dW,timeInterpolation)
+            # Julia is column-major layout
+            return Main.McSimulationWithBrownians(model,times,sim.dW.transpose(2,1,0),timeInterpolation)
         else:
             return Main.McSimulation(model,times,nPaths,seed,timeInterpolation)
     else:  # do not use this with manual inputs
-        return Main.McSimulation(model,times,nPaths,seed,timeInterpolation,sim.dW,sim.X)
+        # Julia is column-major layout
+        return Main.McSimulation(model,times,nPaths,seed,timeInterpolation,sim.dW.transpose(2,1,0),sim.X.transpose(2,1,0))
     return None
 
 def JuliaDiscountedAt(jSim, jPayoffs):
