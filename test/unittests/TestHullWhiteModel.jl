@@ -94,7 +94,7 @@ end
     seed = 4321
     # risk-neutral simulation
     mcSim = McSimulation(model,times,nPaths,seed)
-    cfPVs = [ discountedAt(payoff, path_) for payoff in cfs, path_ in paths(mcSim) ]
+    cfPVs = discountedAt(cfs, mcSim)
     cfPVs = mean(cfPVs, dims=2)
     discounts0 = [ discount(mcSim.model.yieldCurve,t+dT0) for t in liborTimes ]
     discounts1 = [ discount(mcSim.model.yieldCurve,t+dT0+dT1) for t in liborTimes ]

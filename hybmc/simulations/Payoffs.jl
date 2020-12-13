@@ -17,6 +17,28 @@ function discountedAt(self::Payoff, p::Path)
     return at(self,p) / numeraire(p,obsTime(self))
 end
 
+function discountedAt(self::Payoff, paths::Array{Path,1})
+    res = zeros(size(paths,1))
+    for j = 1:size(res,1)
+        res[j] = at(self,paths[j]) / numeraire(paths[j],obsTime(self))
+    end
+    return res
+end
+
+discountedAt(self::Payoff, sim::McSimulation) = discountedAt(self, paths(sim))
+
+function discountedAt(payoffs::Array, paths::Array{Path,1})
+    res = zeros( (size(payoffs,1), size(paths,1)) )
+    for j = 1:size(paths,1)
+        for i = 1:size(payoffs,1)
+            res[i,j] = at(payoffs[i],paths[j]) / numeraire(paths[j],obsTime(payoffs[i]))
+        end
+    end
+    return res
+end
+
+discountedAt(payoffs::Array{}, sim::McSimulation) = discountedAt(payoffs, paths(sim))
+
 function observationTimes(self::Payoff)
     throw(ArgumentError("Implementation of method observationTimes() required."))
 end

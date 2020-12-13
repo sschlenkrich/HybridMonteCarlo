@@ -34,9 +34,9 @@ def JuliaSimulation(sim, simulate=False, useBrownians=False, times=None, nPaths=
         return Main.McSimulation(model,times,nPaths,seed,timeInterpolation,sim.dW.transpose(2,1,0),sim.X.transpose(2,1,0))
     return None
 
-def JuliaDiscountedAt(jSim, jPayoffs):
-    Main.sim = jSim
+def JuliaDiscountedAt(jPayoffs, jSim):
     Main.payoffs = jPayoffs
-    scenarios = Main.eval("[ discountedAt(payoff,path) for payoff in payoffs, path in paths(sim) ]")
+    Main.sim = jSim
+    scenarios = Main.eval('discountedAt(payoffs,sim)')
     return scenarios
 

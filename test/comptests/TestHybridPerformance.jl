@@ -119,7 +119,7 @@ end
 
 
 function fwd(mcSim::McSimulation,p::Payoff)
-    samples = [ discountedAt(p,path_) for path_ in paths(mcSim) ]
+    samples = discountedAt(p,mcSim)
     fwd = mean(samples) /
         discount(mcSim.model.domRatesModel.yieldCurve,obsTime(p))
     err = std(samples) / sqrt(size(samples)[1]) /
@@ -128,7 +128,7 @@ function fwd(mcSim::McSimulation,p::Payoff)
 end
 
 function npv(mcSim::McSimulation,leg)
-    samples = [ discountedAt(p,path_) for path_ in paths(mcSim), p in leg ]
+    samples = transpose(discountedAt(leg,mcSim))
     npv_ = mean(sum(samples, dims=2), dims=1)
     err = std(sum(samples, dims=2), dims=1)
     return (npv_,err)

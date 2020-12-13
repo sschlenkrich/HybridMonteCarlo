@@ -24,7 +24,7 @@ function HwModel(rate=0.01,vol=0.0050,mean=0.03)
 end
 
 function fwd(mcSim::McSimulation,p::Payoff)
-    samples = [ discountedAt(p,path_) for path_ in paths(mcSim) ]
+    samples = discountedAt(p,mcSim)
     fwd = mean(samples) /
         discount(mcSim.model.domRatesModel.yieldCurve,obsTime(p))
     err = std(samples) / sqrt(size(samples)[1]) /
