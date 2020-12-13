@@ -19,7 +19,7 @@ end
 
 function discountedAt(self::Payoff, paths::Array{Path,1})
     res = zeros(size(paths,1))
-    for j = 1:size(res,1)
+    @inbounds Threads.@threads for j = 1:size(res,1)
         res[j] = at(self,paths[j]) / numeraire(paths[j],obsTime(self))
     end
     return res
@@ -29,8 +29,8 @@ discountedAt(self::Payoff, sim::McSimulation) = discountedAt(self, paths(sim))
 
 function discountedAt(payoffs::Array, paths::Array{Path,1})
     res = zeros( (size(payoffs,1), size(paths,1)) )
-    for j = 1:size(paths,1)
-        for i = 1:size(payoffs,1)
+    @inbounds Threads.@threads for j = 1:size(paths,1)
+        @inbounds Threads.@threads for i = 1:size(payoffs,1)
             res[i,j] = at(payoffs[i],paths[j]) / numeraire(paths[j],obsTime(payoffs[i]))
         end
     end

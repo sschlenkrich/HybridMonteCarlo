@@ -1,7 +1,7 @@
 
 include("../models/StochasticProcess.jl")
 
-using Random, Distributions
+using Random, Distributions, Distributed
 
 struct McSimulation{T<:AbstractFloat}
     model::StochasticProcess
@@ -19,7 +19,7 @@ function McSimulation(model,times,nPaths,seed=123,timeInterpolation=true)
     dW = rand( norm, (nPaths,size(times)[1]-1,factors(model)) )
     dW = permutedims(dW, [3, 2, 1])  # we do not want to break unit tests
     X = zeros((stateSize(model), size(times)[1], nPaths))
-    @views for i = 1:nPaths
+    @views @inbounds Threads.@threads for i = 1:nPaths
         X[:,1,i] = initialValues(model)
         for j = 1:size(times)[1]-1
             evolve(model,times[j],X[:,j,i],times[j+1]-times[j],dW[:,j,i],X[:,j+1,i])
