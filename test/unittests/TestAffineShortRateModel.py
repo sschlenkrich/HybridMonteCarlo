@@ -6,7 +6,6 @@ sys.path.append('./')
 import unittest
 
 import numpy as np
-from hybmc.termstructures.YieldCurve import YieldCurve
 from hybmc.models.AffineShortRateModel import AffineShortRateModel, CoxIngersollRossModel, fullTruncation, lognormalApproximation, quadraticExponential
 from hybmc.simulations.McSimulation import McSimulation
 

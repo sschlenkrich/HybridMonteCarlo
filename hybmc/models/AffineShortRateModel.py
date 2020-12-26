@@ -169,6 +169,11 @@ class AffineShortRateModel(StochasticProcess):
         X1[1] = X0[1] + (X0[0] + X1[0]) * dt / 2
         return
 
+    # the short rate over an integration time period
+    # this is required for drift calculation in multi-asset and hybrid models
+    def shortRateOverPeriod(self, t0, dt, X0, X1):
+        return 0.5 * (X0[0] + X1[0])
+
     # keep track of components in hybrid model
 
     def stateAliases(self):
