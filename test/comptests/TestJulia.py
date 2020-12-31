@@ -106,7 +106,7 @@ class TestJulia(unittest.TestCase):
         scens = np.array([ [ payoff.discountedAt(path) for path in sim.paths() ]
                            for payoff in payoffs ])
         jPayoffs = JuliaPayoffs(payoffs)
-        jScens = JuliaDiscountedAt(jSim,jPayoffs)
+        jScens = JuliaDiscountedAt(jPayoffs,jSim)
         self.assertLess(np.max(np.abs(jScens - scens)),1.0e-15)
 
 

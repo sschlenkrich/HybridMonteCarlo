@@ -1,6 +1,6 @@
 # Hybrid Monte Carlo
 
-This repository includes Pyhon modules and Jupyter notebooks for Monte Carlo simulation of financial instruments. It is intended for research and education purpose.
+This repository includes Pyhon and Julia modules and Jupyter notebooks for Monte Carlo simulation of mathematical finance models and instruments. It is intended for research and education purpose.
 
 We provide a set of models that can be combined to form hybrid models for interest rates, FX and equities. Financial instruments are represented by individual payoff objects. The payoff objects are combined to form the contractual cash flows of the instrument.
 
@@ -10,7 +10,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Recommended Python environment is Anaconda. This project is based on Python and Jupyter Notebook. Important packages are Numpy, Pandas and Plotly and QuantLib.
+Recommended Python environment is Anaconda. This project is based on Python, Jupyter Notebook and Julia. Important Python packages are Numpy, Pandas and Plotly and QuantLib. Julia models are derived from Python implementations.
 
 ### Installing
 
@@ -26,37 +26,49 @@ Start Anaconda, open a terminal and navigate to the folder of the local reposito
 cd [path-to]/HybridMonteCarlo/
 ```
 
-Create a new Anaconda Python Environment with required packages 
+Create a new Anaconda Python Environment with required packages.
 
 ```
 conda create --name [envname] --file Requirements.txt
 ```
 
-Activate the new environment via
+Activate the new environment via:
 
 ```
 conda activate [envname]
 ```
 
-Install QuantLib library via pip (QuantLib is not available via conda)
+Install Julia language from https://julialang.org/. Also install PyJulia; used to run Julia from within Python.
+```
+pip install julia
+```
+PyJulia may need to be configured in a new Anaconda environment.
+```
+python
+>>>import julia
+>>>julia.install()
+>>>exit()
+```
+
+Install QuantLib library via pip (QuantLib is not available via conda).
 
 ```
 pip install quantlib
 ```
 
-Now start Jupyter Notebook with
+Now start Jupyter Notebook with:
 
 ```
 jupyter notebook
 ```
 
-This step should open a browser window. Navigate to
+This step should open a browser window. Navigate to:
 
 ```
 [path-to]/HybridMonteCarlo/doc/MonteCarloSimulation.ipynb
 ```
 
-Finally, the notebook can be executed by selecting the menu item
+Finally, the notebook can be executed by selecting the menu item.
 
 ```
 Kernel > Restart & Run all
@@ -73,6 +85,7 @@ Inspect the output and have fun.
        -  **products/** - financial products that provide payoff structures
        -  **simulations/** - Monte Carlo simulation and payoffs
        -  **termstructures/** - interest rate and volatility structures
+	   -  **wrappers/** - Python wrappers for Julia models and C++/QuantLib models
 
 ## Data Files
 
@@ -87,3 +100,4 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 ## Authors and History
 
 * **Sebastian Schlenkrich**, October 2020 - *Initial setup*
+* **Sebastian Schlenkrich**, December 2020 - *Add Julia to master*

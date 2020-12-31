@@ -1,4 +1,5 @@
 jupyter
+matplotlib
 numpy
 pandas
 plotly

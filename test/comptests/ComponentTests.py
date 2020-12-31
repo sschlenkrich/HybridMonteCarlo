@@ -12,7 +12,13 @@ from TestSpreadModel          import TestSpreadModel
 from TestSwapProduct          import TestSwapProduct
 
 from TestJulia                import TestJulia
-from TestQuantLib             import TestQuantLib
+
+runTestQuantLib = True
+try:
+    from TestQuantLib             import TestQuantLib
+except ImportError as e:
+   print('Error: Cannot import TestQuantLib. Skip this test.')
+   runTestQuantLib = False
 
 def test():
     print('Testing HybridMonteCarlo ComponentTests:')
@@ -23,7 +29,8 @@ def test():
     suite.addTest(unittest.makeSuite(TestSwapProduct))
 
     suite.addTest(unittest.makeSuite(TestJulia))
-    suite.addTest(unittest.makeSuite(TestQuantLib))
+    if runTestQuantLib:
+        suite.addTest(unittest.makeSuite(TestQuantLib))
 
     result = unittest.TextTestRunner(verbosity=2).run(suite)
 
