@@ -130,7 +130,7 @@ end
 function evolve(self::QuasiGaussianModel, t0, X0, dt, dW, X1)
     # first we may simulate stochastic vol via lognormal approximation (or otherwise)
     # next we need V = z * sigmaxT sigmax
-    sigmaxT = sigma_xT(self, t0, X0)
+    sigmaxT = sigma_xT(self, t0+0.5*dt, X0)  # assume constant vol on (t0, t0+dt)
     V = sigmaxT * transpose(sigmaxT)   # we need V later for x simulation
     # we also calculate intermediate variables; these do strictly depend on X and could be cached as well
     GPrime_ = [ GPrime(self,i,0,dt) for i = 1:self.d ]
@@ -191,7 +191,7 @@ function zeroBondVolatility(self::QuasiGaussianModel, t, T)
     # sigma_r^T = sigma_x^T sqrt(z) 
     # sigma_P^T = G(t,T)^T sigma_x^T sqrt(z)
     G_ = [ G(self, i, t, T) for i = 1:self.d ]
-    sigmaxT = sigma_xT(self, t, initialValues(self))  # we approximate at x=0
+    sigmaxT = sigma_xT(self, 0.5*(t+T), initialValues(self))  # we approximate at x=0
     return transpose(sigmaxT) * G_
 end
 
@@ -199,6 +199,6 @@ function zeroBondVolatilityPrime(self::QuasiGaussianModel, t, T)
     # we wrap scalar bond volatility into array to allow
     # for generalisation to multi-factor models
     GPrime_ = [ GPrime(self, i, t, T) for i = 1:self.d ]
-    sigmaxT = sigma_xT(self, t, initialValues(self))  # we approximate at x=0
+    sigmaxT = sigma_xT(self, 0.5*(t+T), initialValues(self))  # we approximate at x=0
     return transpose(sigmaxT) * GPrime_
 end
