@@ -127,7 +127,7 @@ class QuasiGaussianModel(StochasticProcess):
     def evolve(self, t0, X0, dt, dW, X1):
         # first we may simulate stochastic vol via lognormal approximation (or otherwise)
         # next we need V = z * sigmaxT sigmax
-        sigmaxT = self.sigma_xT(t0, X0)
+        sigmaxT = self.sigma_xT(t0+0.5*dt, X0)  # assume constant vol on (t0, t0+dt)
         V = sigmaxT @ sigmaxT.T   # we need V later for x simulation
         # we also calculate intermediate variables; these do strictly depend on X and could be cached as well
         GPrime = np.array([ self.GPrime(i,0,dt) for i in range(self._d) ])
@@ -178,7 +178,7 @@ class QuasiGaussianModel(StochasticProcess):
         # sigma_r^T = sigma_x^T sqrt(z) 
         # sigma_P^T = G(t,T)^T sigma_x^T sqrt(z)
         G = np.array([ self.G(i, t, T) for i in range(self._d) ])
-        sigmaxT = self.sigma_xT(t, self.initialValues())  # we approximate at x=0
+        sigmaxT = self.sigma_xT(0.5*(t+T), self.initialValues())  # we approximate at x=0
         return G @ sigmaxT
 
 
@@ -186,7 +186,7 @@ class QuasiGaussianModel(StochasticProcess):
         # we wrap scalar bond volatility into array to allow
         # for generalisation to multi-factor models
         GPrime = np.array([ self.GPrime(i, t, T) for i in range(self._d) ])
-        sigmaxT = self.sigma_xT(t, self.initialValues())  # we approximate at x=0
+        sigmaxT = self.sigma_xT(0.5*(t+T), self.initialValues())  # we approximate at x=0
         return GPrime @ sigmaxT
 
     def stateAliases(self):
