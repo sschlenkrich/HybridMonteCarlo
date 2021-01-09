@@ -11,58 +11,34 @@ class MarkovFutureModel(StochasticProcess):
 # We keep notation as close as possible to Quasi-Gaussian model.
 
     # Python constructor
-    def __init__(self, futuresCurve, d, times, sigma, chi):
+    def __init__(self, futuresCurve, d, times, sigmaT, chi):
         self.futuresCurve     = futuresCurve  # initial futures term structure; providing a method future(T) representing F(0,T) 
         self._d               = d             # specify d-dimensional Brownian motion for x(t)
         self._times           = times         # time-grid of left-constant model (i.e. volatility) parameter values
-        self._sigma           = sigma         # volatility of x
+        self._sigmaT          = sigmaT        # volatility of x
         self._chi             = chi           # mean reversion
         self._y               = np.zeros([self._times.shape[0],self._d,self._d])
-        # t0 = 0.0
-        # y0 = np.zeros([self._d,self._d])
         for k, t1 in enumerate(self._times):
-            # h = np.exp(-self._chi*(t1-t0))
-            # V = self._sigma[k].T @ self._sigma[k]
-            # # isplay(V,h)
-            # for i in range(self._d):
-            #     for j in range(self._d):
-            #         chi_ij = self._chi[i] + self._chi[j]
-            #         if np.abs(chi_ij) < 1.0e-6:
-            #             dt = t1 - t0
-            #             delta = dt - 0.5*chi_ij*dt**2 + 1.0/6.0*chi_ij*dt**3
-            #         else:
-            #             delta = (1.0 - h[i]*h[j]) / chi_ij
-            #         self._y[k,i,j] = h[i] * y0[i,j] * h[j] + V[i,j] * delta
-            # t0 = t1
-            # y0 = self._y[k]
             self._y[k] = self.y(t1)
-
-    # auxilliary methods
-
-    #def G(self, i, t, T):
-    #    return (1.0 - np.exp(-self._chi[i]*(T-t))) / self._chi[i]
-    
-    #def GPrime(self, i, t, T):
-    #    return np.exp(-self._chi[i]*(T-t))
 
     # time-dependent model parameters are assumed (left-) piece-wise constant
     def _idx(self,t):
         return min(np.searchsorted(self._times,t),len(self._times)-1)
 
-    def sigma(self, t):
-        return self._sigma[self._idx(t)]    
+    def sigmaT(self, t):
+        return self._sigmaT[self._idx(t)]
 
     def covariance(self, t, T):
-        sigma = self.sigma(0.5*(t+T)) # assume sigma constant on (t,T)
-        M = sigma.T @ sigma  
+        sigmaT = self.sigmaT(0.5*(t+T)) # assume sigma^T constant on (t,T)
+        M = sigmaT @ sigmaT.T
         h = np.exp(-self._chi*(T-t))
         #display(M,h)
         for i in range(self._d):
             for j in range(self._d):
                 chi_ij = self._chi[i] + self._chi[j]
-                if np.abs(chi_ij) < 1.0e-6:
-                    dt = T - t
-                    delta = dt - 0.5*chi_ij*dt**2 + 1.0/6.0*chi_ij*dt**3
+                if np.abs(chi_ij) < 1.0e-6:  # avoid division by zero
+                    a = chi_ij * (T - t)
+                    delta = (T-t) * (1.0 - a/2.0*(1.0 - a/3.0))
                 else:
                     delta = (1.0 - h[i]*h[j]) / chi_ij
                 M[i,j] *= delta
@@ -110,6 +86,13 @@ class MarkovFutureModel(StochasticProcess):
     # simulate Markov model state variable
     def evolve(self, t0, X0, dt, dW, X1):
         h = np.exp(-self._chi*dt)
+        G = np.zeros(self._d)
+        for i in range(self._d):
+            if np.abs(self._chi[i]) < 1.0e-6:  # avoid division by zero
+                a = self._chi[i] * dt
+                G[i] = dt * (1.0 - a/2.0*(1.0 - a/3.0))
+            else:
+                G[i] = (1.0 - h[i])/self._chi[i]
         y0 = self.y(t0)
         cov = self.y(t0+dt)
         for i in range(self._d):
@@ -123,18 +106,27 @@ class MarkovFutureModel(StochasticProcess):
         for i in range(self._d):
             X1[i] = h[i] * X0[i]
         # \int_t0^t1 H(u,t1) y(u)
-        sigma = self.sigma(t0+0.5*dt) # assume sigma constant on (t,T)
-        V = sigma.T @ sigma
-        chi_i_p_chi_j = np.array([[ chi_i + chi_j for chi_i in self._chi ] for chi_j in self._chi])
-        B = V / chi_i_p_chi_j  #  this fails if chi_i + chi_j == 0 (or small)
-        A = y0 - B
-        # E = H A G + G B
-        E = np.zeros([self._d,self._d])
+        sigmaT = self.sigmaT(t0+0.5*dt) # assume sigma constant on (t,T)
+        V = sigmaT @ sigmaT.T
+        # E = H y G + [G B - H B G]
+        # H y G
+        E0 = np.zeros([self._d,self._d])
+        for j in range(self._d):
+            for i in range(self._d):
+                E0[i,j] = h[i] * y0[i,j] * G[j]
+        # G B - H B G
+        C = np.zeros([self._d,self._d])
         for i in range(self._d):
             for j in range(self._d):
-                E[i,j] = h[i] * A[i,j] * (1.0 - h[j])/self._chi[j] + (1.0 - h[i])/self._chi[i] * B[i,j]
+                if i==j:
+                    C[i,j] = 0.5 * G[i]*G[j]
+                else:
+                    C[i,j] = (G[i] - h[i] * G[j]) / (self._chi[i] + self._chi[j])  # this fails if chi_i = -chi_j
+                C[i,j] *= V[i,j]
+        #
+        E = E0 + C
         # \int_t0^t1 H(u,t1)\theta(u)du = 0.5 * [ E \chi 1 - G V 1 ]
-        I = 0.5 * ( E @ self._chi - ((1.0 - h)/self._chi) * np.sum(V,axis=1) )
+        I = 0.5 * ( E @ self._chi - G * np.sum(V,axis=1) )
         # E[ x1 | x0 ] = H(t0,t1) x0 + I
         for i in range(self._d):
             X1[i] += I[i]
