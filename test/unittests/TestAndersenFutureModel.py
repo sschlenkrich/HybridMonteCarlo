@@ -13,7 +13,7 @@ from hybmc.simulations.McSimulation import McSimulation
 
 import matplotlib.pyplot as plt
 
-class TestAffineShortRateModel(unittest.TestCase):
+class TestAndersenFutureModel(unittest.TestCase):
 
     def test_ModelSetup(self):
         # Andersen example
@@ -94,4 +94,4 @@ class TestAffineShortRateModel(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    
+

@@ -2,8 +2,6 @@
 
 
 import numpy as np
-from scipy.optimize import brentq
-from hybmc.mathutils.Helpers import Black, Bachelier, BachelierImpliedVol
 from hybmc.models.StochasticProcess import StochasticProcess
 
 
@@ -28,7 +26,7 @@ class AndersenFutureModel(StochasticProcess):
 
     def hInfty(self):
         return self._sigma_infty
-    
+
     def covariance(self, t, T):
         h1_ = self.h1(0.5*(t+T))
         h2_ = self.h2(0.5*(t+T))
@@ -76,7 +74,7 @@ class AndersenFutureModel(StochasticProcess):
         # H(t0,t1) x0 + G(t0,t1) theta
         for i in range(2):
             X1[i] = H[i] * X0[i] + G[i] * theta[i]
-        # add diffusion term        
+        # add diffusion term
         for i in range(2):
             for j in range(2):
                 X1[i] += L[i,j] * dW[j]  # maybe also exploit that L is lower triangular
