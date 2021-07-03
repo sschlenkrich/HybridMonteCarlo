@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from hybmc.simulations.Payoffs import Payoff
+from hybmc.simulations.Payoffs import Payoff, Cache
 from hybmc.mathutils.Regression import Regression
 
 
@@ -39,10 +39,12 @@ class AmcPayoff(Payoff):
         self.simulation = simulation           # a monte carlo simulation for regression calibration
         self.maxPolynDegree = maxPolynDegree   # maximum degree of monomials used for regression
         self.regression = None           # initial state, we use lazy calibration
+        #
+        self.withTrigger = False   # we want to allow accessing result AND exercise decision trigger
 
     def f(self, X, Y, trigger, p):
         # a function calculating f(X,Y;T), this is defined in derived classes
-        raise ValueError('Implementation of payoff funtion f() required.')
+        raise NotImplementedError('Implementation of payoff funtion f() required.')
 
     def __useRegression(self):  # we need this condition several times
         return self.regression is None and \
@@ -72,7 +74,10 @@ class AmcPayoff(Payoff):
         if self.regression is not None:
             Z = np.array([ z.at(p) for z in self.z ])
             trigger = self.regression.value(Z)  # estimate for X-Y
-            return self.f(None,None,trigger,p)
+            res = self.f(None,None,trigger,p)
+            if self.withTrigger:
+                return (res, trigger)
+            return res
         # if there is no regression we look into the future
         X = 0.0
         Y = 0.0
@@ -85,7 +90,10 @@ class AmcPayoff(Payoff):
                 Y += y.discountedAt(p)
             Y *= numeraire
         trigger = X - Y
-        return self.f(X,Y,trigger,None)
+        res = self.f(X,Y,trigger,None)
+        if self.withTrigger:
+            return (res, trigger)
+        return res
 
     def observationTimes(self):
         obsTimes = { self.obsTime }
@@ -190,3 +198,30 @@ class AmcSum(AmcPayoff):
 
     def __str__(self):
         return 'AmcSum(%s)' % super().__str__()
+
+
+class AmcElement(Payoff):
+    """
+    Extract the value or trigger from an AmcPayoff.
+
+    This class requires a cached AMC payoff as input.
+    """
+
+    # Python constructor
+    def __init__(self, x, element='VALUE'):
+        Payoff.__init__(self, x.obsTime)
+        assert isinstance(x, Cache), 'Input payoff must be Cache.'
+        assert isinstance(x.x, AmcPayoff), 'Cached input must be AmcPayoff'
+        x.x.withTrigger = True  # make sure we do calculate value AND trigger
+        self.x = x
+        #
+        assert isinstance(element, str), 'Element string required'
+        self.idx = -1
+        if element.upper()=='VALUE':
+            self.idx = 0
+        if element.upper()=='TRIGGER':
+            self.idx = 1
+        assert self.idx >= 0, 'Unknown element specifier.'
+
+    def at(self, p):
+        return self.x.at(p)[self.idx]
