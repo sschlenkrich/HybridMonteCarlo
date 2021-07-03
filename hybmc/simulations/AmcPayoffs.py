@@ -225,3 +225,10 @@ class AmcElement(Payoff):
 
     def at(self, p):
         return self.x.at(p)[self.idx]
+
+    def __str__(self):
+        if self.idx == 0: # pass on value 
+            return self.x.__str__()
+        if self.idx == 1:
+            return 'AmcTrigger(%s)' % self.x.__str__()
+        return 'Unknown'
