@@ -44,8 +44,9 @@ class TestAffineShortRateModel(unittest.TestCase):
         #print(np.mean(P10))
         #print(model.zeroBondPrice(0.0,10.0,model.r0))
         self.assertAlmostEqual(np.mean(P10),0.6480670673701923, 12)
-        self.assertAlmostEqual(model.zeroBondPrice(0.0,10.0,model.r0),0.5997174951900259, 12)
-    
+        #self.assertAlmostEqual(model.zeroBondPrice(0.0,10.0,model.r0),0.5997174951900259, 12)
+        self.assertAlmostEqual(model.zeroBondPrice(0.0,10.0,model.r0),0.5997174955333032, 12)
+
     def test_RicattiAB(self):
         # CIR parameters
         r0         = 0.02

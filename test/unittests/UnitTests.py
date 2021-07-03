@@ -5,6 +5,7 @@ import unittest
 
 # add individual tests here
 from TestAffineShortRateModel import TestAffineShortRateModel
+from TestAndersenFutureModel import TestAndersenFutureModel
 from TestAmcPayoffs          import TestAmcPayoffs
 from TestCreditModel         import TestCreditModel
 from TestHullWhiteModel      import TestHullWhiteModel
@@ -17,6 +18,7 @@ def test():
     print('Testing HybridMonteCarlo UnitTests:')
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestAffineShortRateModel))
+    suite.addTest(unittest.makeSuite(TestAndersenFutureModel))
     suite.addTest(unittest.makeSuite(TestAmcPayoffs))
     suite.addTest(unittest.makeSuite(TestCreditModel))
     suite.addTest(unittest.makeSuite(TestHullWhiteModel))

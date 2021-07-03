@@ -41,6 +41,23 @@ class McSimulation:
         rho = (self.times[tIdx] - t) / (self.times[tIdx] - self.times[tIdx-1])
         return rho * self.X[idx,tIdx-1] + (1.0-rho) * self.X[idx,tIdx]
 
+    def states(self, t):
+        """
+        Return a 2-dim array of all states of the simulation at a given time.
+        Result is of shape (nPaths,model.factors())
+        """
+        tIdx = np.searchsorted(self.times,t)
+        tIdx = min(tIdx,len(self.times)-1)  # use the last element
+        if np.abs(self.times[tIdx]-t)<0.5/365:  # we give some tolerance of half a day
+            return self.X[idx,tIdx]
+        if not self.timeInterpolation:
+            raise ValueError('timeInterpolation required for input time %lf' % (t))
+        if t >= self.times[tIdx] or tIdx==0:  # extrapolation
+            return self.X[idx,tIdx]
+        # linear interpolation
+        rho = (self.times[tIdx] - t) / (self.times[tIdx] - self.times[tIdx-1])
+        return rho * self.X[idx,tIdx-1] + (1.0-rho) * self.X[idx,tIdx]
+
     def path(self, idx):
         return Path(self, idx)
 
