@@ -27,36 +27,24 @@ class McSimulation:
         if showProgress: print('| Finished.', end='\n', flush=True)
 
     def state(self, idx, t):
-        if not idx<self.nPaths:
-            raise IndexError('idx < nPaths required.')
+        assert isinstance(idx, (int, list, tuple, np.ndarray)), 'No proper index type'
+        assert (not isinstance(idx, int)) or idx<self.nPaths, 'idx < nPaths required.'
+        idxIsInt = True
+        if not isinstance(idx, int):
+            assert len(idx) == self.nPaths, 'len(idx) == self.nPaths required.'
+            idxIsInt = False
         tIdx = np.searchsorted(self.times,t)
         tIdx = min(tIdx,len(self.times)-1)  # use the last element
         if np.abs(self.times[tIdx]-t)<0.5/365:  # we give some tolerance of half a day
-            return self.X[idx,tIdx]
+            return self.X[idx,tIdx] if idxIsInt else self.X[idx,tIdx].transpose()
         if not self.timeInterpolation:
             raise ValueError('timeInterpolation required for input time %lf' % (t))
         if t >= self.times[tIdx] or tIdx==0:  # extrapolation
-            return self.X[idx,tIdx]
+            return self.X[idx,tIdx] if idxIsInt else self.X[idx,tIdx].transpose()
         # linear interpolation
         rho = (self.times[tIdx] - t) / (self.times[tIdx] - self.times[tIdx-1])
-        return rho * self.X[idx,tIdx-1] + (1.0-rho) * self.X[idx,tIdx]
-
-    def states(self, t):
-        """
-        Return a 2-dim array of all states of the simulation at a given time.
-        Result is of shape (nPaths,model.factors())
-        """
-        tIdx = np.searchsorted(self.times,t)
-        tIdx = min(tIdx,len(self.times)-1)  # use the last element
-        if np.abs(self.times[tIdx]-t)<0.5/365:  # we give some tolerance of half a day
-            return self.X[idx,tIdx]
-        if not self.timeInterpolation:
-            raise ValueError('timeInterpolation required for input time %lf' % (t))
-        if t >= self.times[tIdx] or tIdx==0:  # extrapolation
-            return self.X[idx,tIdx]
-        # linear interpolation
-        rho = (self.times[tIdx] - t) / (self.times[tIdx] - self.times[tIdx-1])
-        return rho * self.X[idx,tIdx-1] + (1.0-rho) * self.X[idx,tIdx]
+        res = rho * self.X[idx,tIdx-1] + (1.0-rho) * self.X[idx,tIdx]
+        return res if idxIsInt else res.transpose()
 
     def path(self, idx):
         return Path(self, idx)

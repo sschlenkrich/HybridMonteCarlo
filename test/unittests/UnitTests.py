@@ -10,6 +10,7 @@ from TestAmcPayoffs          import TestAmcPayoffs
 from TestCreditModel         import TestCreditModel
 from TestHullWhiteModel      import TestHullWhiteModel
 from TestHullWhiteMonteCarlo import TestHullWhiteMonteCarlo
+from TestMultiPath           import TestMultiPath
 from TestPayoffScripting     import TestPayoffScripting
 from TestQuasiGaussianModel  import TestQuasiGaussianModel
 from TestShiftedRatesModel   import TestShiftedRatesModel
@@ -23,6 +24,7 @@ def test():
     suite.addTest(unittest.makeSuite(TestCreditModel))
     suite.addTest(unittest.makeSuite(TestHullWhiteModel))
     suite.addTest(unittest.makeSuite(TestHullWhiteMonteCarlo))
+    suite.addTest(unittest.makeSuite(TestMultiPath))
     suite.addTest(unittest.makeSuite(TestPayoffScripting))
     suite.addTest(unittest.makeSuite(TestQuasiGaussianModel))
     suite.addTest(unittest.makeSuite(TestShiftedRatesModel))

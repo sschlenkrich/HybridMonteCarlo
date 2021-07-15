@@ -269,7 +269,7 @@ class Max(Payoff):
         self.x = x
         self.y = y
     def at(self, p):
-        return max(self.x.at(p), self.y.at(p))
+        return np.maximum(self.x.at(p), self.y.at(p))
     def observationTimes(self):
         return self.x.observationTimes().union(self.y.observationTimes())
     def __str__(self):
@@ -285,7 +285,7 @@ class Min(Payoff):
         self.x = x
         self.y = y
     def at(self, p):
-        return min(self.x.at(p), self.y.at(p))
+        return np.minimum(self.x.at(p), self.y.at(p))
     def observationTimes(self):
         return self.x.observationTimes().union(self.y.observationTimes())
     def __str__(self):
@@ -303,17 +303,17 @@ class Logical(Payoff):
         self.opString = opString
         self.op = None
         if opString == '<':
-            self.op = lambda p : float(self.x.at(p)<self.y.at(p))
+            self.op = lambda p : 1.0 * (self.x.at(p)<self.y.at(p))
         if opString == '<=':
-            self.op = lambda p : float(self.x.at(p)<=self.y.at(p))
+            self.op = lambda p : 1.0 * (self.x.at(p)<=self.y.at(p))
         if opString == '==':
-            self.op = lambda p : float(self.x.at(p)==self.y.at(p))
+            self.op = lambda p : 1.0 * (self.x.at(p)==self.y.at(p))
         if opString == '!=':
-            self.op = lambda p : float(self.x.at(p)!=self.y.at(p))
+            self.op = lambda p : 1.0 * (self.x.at(p)!=self.y.at(p))
         if opString == '>=':
-            self.op = lambda p : float(self.x.at(p)>=self.y.at(p))
+            self.op = lambda p : 1.0 * (self.x.at(p)>=self.y.at(p))
         if opString == '>':
-            self.op = lambda p : float(self.x.at(p)>self.y.at(p))
+            self.op = lambda p : 1.0 * (self.x.at(p)>self.y.at(p))
         if not self.op:
             raise ValueError('Unknown operator: %s.' % opString)
     def at(self, p):
