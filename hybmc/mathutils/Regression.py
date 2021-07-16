@@ -18,12 +18,15 @@ class Regression:
         self.beta = p
 
     def monomials(self, control):
-        x = np.ones(self.multiIdxSet.shape[0])
+        if len(control.shape)==1:  # control is a vector
+            x = np.ones(self.multiIdxSet.shape[0])
+        if len(control.shape)==2:  # control is a matrix; multi-path
+            x = np.ones([self.multiIdxSet.shape[0], control.shape[1]])
         for i in range(self.multiIdxSet.shape[0]):
             for j in range(self.multiIdxSet.shape[1]):
                 x[i] *= control[j]**self.multiIdxSet[i][j]
         return x
 
     def value(self, control):
-        return self.monomials(control).dot(self.beta)
+        return self.beta.dot(self.monomials(control))
 

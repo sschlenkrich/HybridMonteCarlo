@@ -53,20 +53,20 @@ class AmcPayoff(Payoff):
 
     def calibrateRegression(self):
         if self.__useRegression() :  # only in this case we calculate the regression
-            T = np.zeros(self.simulation.nPaths)  # the actual trigger used for regression
-            Z = np.zeros([self.simulation.nPaths,len(self.z)])
-            for k in range(self.simulation.nPaths):
-                p = self.simulation.path(k)
-                numeraire = p.numeraire(self.obsTime)
-                for x in self.x:
-                    T[k] += x.discountedAt(p)
-                if self.y is not None:  # we want to allow calibration with single argument
-                    for y in self.y:
-                        T[k] -= y.discountedAt(p)
-                T[k] *= numeraire
-                for i, z in enumerate(self.z):
-                    Z[k,i] = z.at(p)
-            self.regression = Regression(Z,T,self.maxPolynDegree)
+            idx = np.array([ True for k in range(self.simulation.nPaths) ])  # reference all paths
+            p = self.simulation.path(idx)  # all paths
+            # first calculate trigger
+            T = 0.0
+            for x in self.x:
+                T += x.discountedAt(p)
+            if self.y is not None:  # we want to allow calibration with single argument
+                for y in self.y:
+                    T -= y.discountedAt(p)
+            T *= p.numeraire(self.obsTime)
+            Z = np.zeros([len(self.z), self.simulation.nPaths])
+            for i, z in enumerate(self.z):
+                Z[i] = z.at(p)
+            self.regression = Regression(Z.transpose(),T,self.maxPolynDegree)
         # now we come to the actual payoff calculation
 
     def at(self, p):
@@ -135,15 +135,17 @@ class AmcMax(AmcPayoff):
         if p is not None:  # we need to calculate from path
             X = 0.0  # this shadows input X
             Y = 0.0  # this shadows input Y
-            if trigger>0.0: # we we only calculate one branch
+            if (not isinstance(trigger, float)) or (trigger>0.0): # we we only calculate one branch
                 for x in self.x:
                     X += x.discountedAt(p)
                 X *= p.numeraire(self.obsTime)
-            else:
+            if (not isinstance(trigger, float)) or (trigger<=0.0): # we we only calculate one branch
                 for y in self.y:
                     Y += y.discountedAt(p)
                 Y *= p.numeraire(self.obsTime)
-        return X if trigger>0.0 else Y
+        #return X if trigger>0.0 else Y
+        rho = (trigger>0.0)
+        return rho * X + (1.0 - rho) * Y
 
     def __str__(self):
         return 'AmcMax(%s)' % super().__str__()
@@ -159,15 +161,17 @@ class AmcMin(AmcPayoff):
         if p is not None:  # we need to calculate from path
             X = 0.0  # this shadows input X
             Y = 0.0  # this shadows input Y
-            if trigger<0.0: # we we only calculate one branch
+            if (not isinstance(trigger, float)) or (trigger<0.0): # we we only calculate one branch
                 for x in self.x:
                     X += x.discountedAt(p)
                 X *= p.numeraire(self.obsTime)
-            else:
+            if (not isinstance(trigger, float)) or (trigger>=0.0): # we we only calculate one branch
                 for y in self.y:
                     Y += y.discountedAt(p)
                 Y *= p.numeraire(self.obsTime)
-        return X if trigger<0.0 else Y
+        #return X if trigger<0.0 else Y
+        rho = (trigger<0.0)
+        return rho * X + (1.0 - rho) * Y
 
     def __str__(self):
         return 'AmcMin(%s)' % super().__str__()
@@ -181,7 +185,8 @@ class AmcOne(AmcPayoff):
 
     def f(self, X, Y, trigger, p):
         # no need to calculate any payoffs
-        return 1.0 if trigger>0.0 else 0.0
+        #return 1.0 if trigger>0.0 else 0.0
+        return 1.0 * (trigger>0.0)
 
     def __str__(self):
         return 'AmcOne(%s)' % super().__str__()
